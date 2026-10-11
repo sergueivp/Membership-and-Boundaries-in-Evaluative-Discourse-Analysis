@@ -1,0 +1,674 @@
+<title>Membership Procedure Anatomy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+/* Layout: patent-style line drawing of a manual exchange; sticky readout above a wide, scrollable plate; caption and notes below. */
+:root{
+  --paper:#F1F3F2; --panel:#FBFCFB; --panel2:#ECEFEE; --board:#E6EAE9;
+  --ink:#19232A; --muted:#5B686E; --rule:#C2CBCB;
+  --accent:#2A53C4; --wash:rgba(42,83,196,.10);
+  --s:#23804A; --u:#C08310; --x:#BD3925; --lampText:#FFFFFF; --uText:#1D1400;
+  --f-label:"IBM Plex Sans Condensed","Arial Narrow",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --f-body:"Source Serif 4",Georgia,"Times New Roman",serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#101517; --panel:#172126; --panel2:#141C20; --board:#1B252A;
+  --ink:#DCE4E3; --muted:#8F9DA2; --rule:#2E3B40;
+  --accent:#88A7FF; --wash:rgba(136,167,255,.14);
+  --s:#4DBA76; --u:#E2A835; --x:#F0705A; --lampText:#0D1214; --uText:#1D1400;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#101517; --panel:#172126; --panel2:#141C20; --board:#1B252A;
+  --ink:#DCE4E3; --muted:#8F9DA2; --rule:#2E3B40;
+  --accent:#88A7FF; --wash:rgba(136,167,255,.14);
+  --s:#4DBA76; --u:#E2A835; --x:#F0705A; --lampText:#0D1214; --uText:#1D1400;
+  color-scheme:dark}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+.wrap{max-width:1640px;margin:0 auto;padding-inline:20px;padding-block:24px 56px}
+header.top{display:grid;gap:6px;max-width:72ch;margin-bottom:14px}
+.eyebrow{font-family:var(--f-label);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-label);font-weight:600;font-size:clamp(26px,3.2vw,38px);line-height:1.1;margin:0;text-wrap:balance}
+.lede{margin:0;color:var(--muted);font-size:15.5px}
+
+/* sticky console */
+.console{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--rule);padding-block:10px;display:grid;gap:10px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:var(--f-label)}
+.seg{display:inline-flex;border:1px solid var(--ink);border-radius:4px;overflow:hidden}
+.seg button,.btn{font:inherit;font-size:14px;background:var(--panel);color:var(--ink);border:0;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.btn{border:1px solid var(--ink);border-radius:4px}
+.btn:disabled{opacity:.4;cursor:default}
+.seg button:focus-visible,.btn:focus-visible,.idx-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.stepno{font-family:var(--f-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:7ch}
+.readout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:6px 28px;max-height:38vh;overflow:auto}
+.ro-head{grid-column:1/-1;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.ro-head h2{font-family:var(--f-label);font-weight:600;font-size:20px;margin:0}
+.badge{font-family:var(--f-label);font-size:12px;letter-spacing:.04em;padding:1px 8px;border-radius:999px;border:1px solid currentColor}
+.badge.strong{color:var(--s)} .badge.partial{color:var(--u)} .badge.weak{color:var(--x)}
+.badge.S{color:var(--s)} .badge.U{color:var(--u)} .badge.X{color:var(--x)}
+#roText{margin:0;font-size:15px;max-width:68ch}
+#roNote{margin:6px 0 0;font-size:14px;color:var(--muted);max-width:68ch}
+#roList{margin:0;padding-left:18px;font-size:14px;display:grid;gap:2px}
+#roSrc{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-top:4px}
+@media (max-width:820px){.readout{grid-template-columns:minmax(0,1fr)}}
+
+/* plate */
+.plate{margin-top:14px;overflow-x:auto;border:1px solid var(--rule);background:var(--paper)}
+.plate svg{display:block;width:100%;min-width:1240px;height:auto}
+.t{font-family:var(--f-label);font-size:12px;fill:var(--ink)}
+.t.s{font-size:10.5px} .t.xs{font-size:9.5px} .t.b{font-weight:600} .t.h{font-weight:600;font-size:13px}
+.t.m{font-family:var(--f-mono);font-size:11px} .t.mut{fill:var(--muted)} .t.acc{fill:var(--accent)}
+.t.i{font-family:var(--f-body);font-style:italic;font-size:11.5px}
+.t.cap{letter-spacing:.12em;font-weight:600;font-size:11px}
+.box{fill:var(--panel);stroke:var(--ink);stroke-width:1.1}
+.desk{fill:var(--panel2);stroke:var(--ink);stroke-width:1.1}
+.board{fill:var(--board);stroke:var(--ink);stroke-width:1.6}
+.layer{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:7 5}
+.dashedbox{fill:none;stroke:var(--muted);stroke-width:1.1;stroke-dasharray:4 3}
+.ticket{fill:var(--panel);stroke:var(--ink);stroke-width:1.1}
+.ln{fill:none;stroke:var(--ink);stroke-width:1.2}
+.ln.mut{stroke:var(--muted)} .ln.dash{stroke-dasharray:4 3} .ln.dot{stroke-dasharray:1.5 3}
+.cable{fill:none;stroke:var(--ink);stroke-width:2.4;stroke-linecap:round}
+.gate{fill:var(--panel);stroke:var(--ink);stroke-width:1}
+.fillink{fill:var(--ink)} .fillmut{fill:var(--muted)} .fillpanel{fill:var(--panel)}
+.jack{fill:var(--panel);stroke:var(--ink);stroke-width:1.3}
+.jack.nb{stroke-dasharray:3 2}
+.jack-h{fill:var(--ink)}
+.sealed{fill:url(#hatch);stroke:var(--ink);stroke-width:1.1}
+.hatchline{stroke:var(--muted);stroke-width:1}
+.zone{fill:var(--wash);stroke:var(--accent);stroke-width:1;stroke-dasharray:3 3}
+.stamp{fill:none;stroke:var(--muted);stroke-width:1.2}
+.arrowhead{fill:var(--ink)}
+.num-c{fill:var(--paper);stroke:var(--ink);stroke-width:1.2}
+.num-t{font-family:var(--f-mono);font-size:11px;font-weight:600;fill:var(--ink)}
+.cord .c{fill:none;stroke:var(--ink);stroke-width:2.1;stroke-linecap:round;transition:stroke-dashoffset 1s ease,stroke .3s}
+.cord .hit{fill:none;stroke:transparent;stroke-width:12;cursor:pointer}
+.cord[data-st="P"] .c{stroke:var(--muted)}
+.cord[data-st="off"] .lamp,.cord[data-st="off"] .pawl{opacity:0}
+.cord .lamp,.cord .pawl{transition:opacity .4s .6s}
+.lamp circle{stroke:var(--ink);stroke-width:1}
+.lamp text{font-family:var(--f-mono);font-size:8.5px;font-weight:600;text-anchor:middle;fill:var(--lampText)}
+.lamp.S circle{fill:var(--s)} .lamp.U circle{fill:var(--u)} .lamp.X circle{fill:var(--x)} .lamp.P circle{fill:var(--rule)}
+.lamp.U text,.lamp.P text{fill:var(--uText)}
+.pawl{fill:var(--x);stroke:var(--ink);stroke-width:.8}
+.lead{fill:none;stroke:var(--ink);stroke-width:1.6}
+.lead.on{stroke:var(--accent);stroke-width:2}
+.part{cursor:pointer;transition:opacity .45s}
+.part:focus{outline:none}
+.part:hover .num-c,.part:focus-visible .num-c{stroke:var(--accent);stroke-width:2.4}
+.hl .box,.hl .desk,.hl .board,.hl .ticket,.hl .layer,.hl .dashedbox,.hl .sealed{stroke:var(--accent);stroke-width:2.2}
+.hl .num-c{fill:var(--accent);stroke:var(--accent)}
+.hl .num-t{fill:var(--paper)}
+.dim{opacity:.18} .pending{opacity:.07}
+[data-row]{transition:opacity .45s}
+.idx{opacity:0;transition:opacity .3s} .show-idx [data-row]:not(.dim) .idx{opacity:1}
+@media (prefers-reduced-motion: reduce){
+  .cord .c,.cord .lamp,.cord .pawl,.part,[data-row],.idx{transition:none}
+}
+
+/* index + caption */
+.index{margin-top:18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}
+.idx-btn{display:flex;gap:8px;align-items:baseline;text-align:left;font-family:var(--f-label);font-size:14px;color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:6px 10px;cursor:pointer}
+.idx-btn b{font-family:var(--f-mono);font-size:12px;min-width:2ch}
+.idx-btn[aria-current="true"]{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.notes{margin-top:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:28px 40px}
+.notes section{min-width:0}
+.notes h3{font-family:var(--f-label);font-weight:600;font-size:15px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px;color:var(--muted)}
+figcaption,.notes p,.notes li{font-size:15px;max-width:72ch}
+.notes ul,.notes ol{margin:0;padding-left:20px;display:grid;gap:6px}
+figcaption{margin-top:16px}
+figcaption b{font-family:var(--f-label)}
+.small{font-size:13px;color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Methodology anatomy · RESLA manuscript v0.12</span>
+    <h1>Membership and boundary procedure</h1>
+    <p class="lede">The method drawn as a manual telephone exchange. Select a numbered part, run the pipeline, or step through cases N05 and N06.</p>
+  </header>
+
+  <div class="console">
+    <div class="controls" role="toolbar" aria-label="View controls">
+      <div class="seg" role="group" aria-label="Mode">
+        <button id="mExplore" aria-pressed="true">Parts</button>
+        <button id="mPipe" aria-pressed="false">Pipeline</button>
+        <button id="mN05" aria-pressed="false">Case N05</button>
+        <button id="mN06" aria-pressed="false">Case N06</button>
+      </div>
+      <button class="btn" id="bPrev" disabled>Previous</button>
+      <button class="btn" id="bPlay" disabled>Play</button>
+      <button class="btn" id="bNext" disabled>Next</button>
+      <span class="stepno" id="stepNo"></span>
+    </div>
+    <section class="readout" id="readout" aria-live="polite">
+      <div class="ro-head"><span class="eyebrow" id="roEye"></span><h2 id="roTitle"></h2><span class="badge" id="roBadge" hidden></span></div>
+      <div><p id="roText"></p><p id="roNote" hidden></p><div id="roSrc"></div></div>
+      <ul id="roList"></ul>
+    </section>
+  </div>
+
+  <figure style="margin:0">
+    <div class="plate">
+      <svg id="svg" viewBox="0 0 1600 1110" role="group" aria-label="Anatomy of the membership and boundary procedure drawn as a manual telephone exchange: archive and selection on the left, the switchboard with membership lamps in the centre, extensions and uncertainty on the right, derivation layer above, operator and adjudication below.">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker>
+          <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="7" class="hatchline"/></pattern>
+        </defs>
+      </svg>
+    </div>
+    <figcaption id="caption">
+      <b>Figure.</b> Anatomy of the membership-and-boundary procedure, drawn as a manual telephone exchange.
+      Vault (1): Instagram archive collected with ExportComments from public-facing posts, June 2026.
+      Distribution frame (2): selection by platform, group label and group size before case reading, removing the source post used for E01; 4 posts, 11 groups, 32 comments.
+      Relabelling tag (3): source handling and minimisation. Sealed boxes (4): source-post contents and original videos, not inspected.
+      Jack field (5): one row per group, one jack per comment in export order, with a column for supplied neighbours.
+      Call ticket (6): the fixed explanatory question. Zones (7): available material, contextual window and analytical focus.
+      Designation strips (8): the occurrence record. Seating rule (9): the configuration threshold.
+      Cord lamps (10): the membership state of one proposed relation: supported (S), unresolved (U) or reasoned exclusion (X).
+      Chronology lockout (20): earlier wording cannot be uptake of a later reply. Stop keys (11): stopping reasons, which can coexist.
+      Test desk (12): the four conditional extensions. Spike (13): uncertainty attached to six kinds of decision.
+      Operator (14) and adjudication seat (16): one analyst. Rear layer (15): derivation of the final form on the same cases.
+      Bench (17): development examples. Register (18): Table 2 and Supplementary Table S1. Dashed position (19): proposed assessment, not carried out.
+      Lamps are drawn on cords only where the article names both endpoints (N05–N09); N02 and N03 show the Table 2 tally; other rows show the Table 2 consequence.
+    </figcaption>
+  </figure>
+
+  <nav class="index" id="index" aria-label="Parts index"></nav>
+
+  <div class="notes">
+    <section>
+      <h3>Not reported in the article</h3>
+      <ul>
+        <li>The total size of the archive.</li>
+        <li>How many neighbours were supplied per group, by whom, and within what window. Only N06-10 is named; the neighbour column therefore has no jacks except N06-10.</li>
+        <li>Which group belongs to which of the four posts. The trunks are drawn into one bus.</li>
+        <li>Comment-level membership states for N01, N04 and N07–N11, and which N02 comment is unresolved. The article places these in Supplementary Table S1.</li>
+        <li>The individuation rule that §3.5 says the study states.</li>
+        <li>Any count in the five counting units (tokens, sequences, occurrences, combinations, configurations).</li>
+        <li>The preliminary form's fields beyond "expanded boundary accounts and separate decision fields".</li>
+        <li>A narrower selection for N05. The comparator shows only the candidate and its extension.</li>
+      </ul>
+    </section>
+    <section>
+      <h3>Where the machine misrepresents</h3>
+      <ul>
+        <li>Prosodic scope. Meaning spreading across wording is not a signal travelling down a wire.</li>
+        <li>Extensions. They are activated by a judgement that an alternative could change the explanation. The leads are clipped by hand; nothing trips automatically.</li>
+        <li>Derivation. A real exchange does not rewire itself by comparing logs. The layer is drawn behind the board.</li>
+        <li>Lamps. A reader may still read a lamp as the status of a comment. N06-10 carries two cords in two states to counter this.</li>
+        <li>Focus. The focus is a set of relations. The shaded band marks only the contextual window.</li>
+        <li>Jack order. Every comment gets a fixed position; the procedure treats export order only as a starting point.</li>
+      </ul>
+    </section>
+    <section>
+      <h3>Review notes for the author</h3>
+      <p class="small">Not part of the caption.</p>
+      <ol>
+        <li>Derivation, reapplication and adjudication use the same archive, analyst and cases, in a fixed reading order with full prior knowledge (§3.6). The plate shows this: the derivation layer and the board are fed by the same bus.</li>
+        <li>§3.5 reads "The study states its individuation rule". The rule does not appear. Either state it or reword the sentence as a requirement.</li>
+        <li>Five counting units are defined; no count is reported in any of them.</li>
+        <li>Table 2 reports membership states for N02, N03, N05 and N06 only. A full tally needs S1.</li>
+        <li>"Supplied neighbours" are undefined, yet they set the contextual window and produce the unresolved candidates.</li>
+        <li>The origin of grouping fields is not described, though group labels are a selection criterion.</li>
+        <li>Choosing the "nearest plausible" candidate lists four cues (address, lexical uptake, chronology, thematic similarity) without a priority or a criterion for plausibility.</li>
+        <li>The order of the configuration threshold (§3.2) and membership assignment (§3.4) is not explicit. The pipeline follows §3.4.</li>
+        <li>"Candidate" names the middle selection in §2.2 and Table 1, and the extension item in §3.3.</li>
+        <li>Kiesling et al.'s scales and trained-annotation experiment were not reproduced, so the baseline is a qualitative reading.</li>
+        <li>Selection before reading fixes order, not blindness: participants recur, E01's insult formula reappears and prior annotations exist.</li>
+        <li>Extension triggers are counterfactual ("could change the explanation") with no test for "could".</li>
+      </ol>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+const NS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('svg');
+function E(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs){if(attrs[k]!=null)e.setAttribute(k,attrs[k]);}(parent||svg).appendChild(e);return e;}
+function T(p,x,y,s,cls,a){const t=E('text',Object.assign({x,y,class:'t '+(cls||'')},a||{}),p);t.textContent=s;return t;}
+function TL(p,x,y,lines,cls,lh,a){lines.forEach((l,i)=>T(p,x,y+i*(lh||14),l,cls,a));}
+function R(p,x,y,w,h,cls,rx){return E('rect',{x,y,width:w,height:h,rx:rx==null?4:rx,class:cls||'box'},p);}
+function P(p,d,cls,a){return E('path',Object.assign({d,class:cls||'ln'},a||{}),p);}
+function num(p,n,x,y){const g=E('g',{},p);E('circle',{cx:x,cy:y,r:10,class:'num-c'},g);T(g,x,y+4,String(n),'',{class:'num-t','text-anchor':'middle'});return g;}
+const NAMES={};
+function part(n,label){NAMES[n]=label;return E('g',{class:'part','data-part':n,tabindex:0,role:'button','aria-label':'Part '+n+': '+label});}
+
+/* ---------- data from the article ---------- */
+const ROWS=[
+ {id:'N01',n:2,tag:'short core',read:'Reply disputes feasibility; its stance on the goal remains open',cons:'Short core; partial disagreement'},
+ {id:'N02',n:6,tally:['S','S','S','S','S','U'],read:'Assurance and parallel challenges; final anti-insult action clear but addressee unresolved',cons:'Five supported members plus unresolved candidate'},
+ {id:'N03',n:4,tally:['S','S','S','S'],tag:'force open',read:'Two clear challenges and an addressed echo with a possible financial insinuation',cons:'Four supported members; evaluative uncertainty recorded separately'},
+ {id:'N04',n:3,tag:'voice change kept',read:'Distress, empathy/policy defence, then third-party challenge',cons:'Preserve voice change; no complainant acceptance inferred'},
+ {id:'N05',n:3,tally:['S','S','U'],read:'Non-adjacent accountability reframing; intervening insult target unknown',cons:'Two supported members; one unresolved'},
+ {id:'N06',n:2,tally:['S','S','U','X'],tag:'U, X: N06-10',read:'Ironic counterassessment; neighbouring complaint may answer the initial claim',cons:'Two supported members plus unresolved contextual candidate; one later-uptake edge excluded'},
+ {id:'N07',n:2,tag:'partial result',read:'Resignation demand; plausibly hostile abbreviated response with unresolved target/relation',cons:'Partial result; confirmed responsive configuration withheld'},
+ {id:'N08',n:2,tag:'supported; scope open',read:'Heart response displays limited positive affiliative uptake',cons:'Supported membership; endorsement scope remains open'},
+ {id:'N09',n:2,tag:'relation kept; subtype open',read:'Role reversal critically recategorises the same target',cons:'Relation and critical reading retained; subtype open'},
+ {id:'N10',n:3,tag:'short core: A–B–C',read:'Critic attacked, then a third participant attacks the insulter',cons:'Short core establishes A–B–C participation'},
+ {id:'N11',n:3,tag:'local scope',read:'Third-party critical reassessment; initials remain unexpanded',cons:'Local grammatical scope; extended prosody unnecessary'}
+];
+const RK={};ROWS.forEach((r,k)=>RK[r.id]=k);
+const rowY=k=>366+48*k, jackX=i=>482+50*(i-1), NBX=830;
+const CORDS=[
+ {id:'n05a',row:'N05',from:3,to:1,st:'S',side:-1,H:20,rel:'Responsive reformulation',ends:'Comment 3 → comment 1 (non-adjacent)',warrant:'Address to the initial questioner and reformulation of the accountability challenge.'},
+ {id:'n05b',row:'N05',from:2,to:1,st:'U',side:1,H:12,rel:'Response within the exchange',ends:'Comment 2 (elongated insult) → comment 1',warrant:'Plausible member of a responsive account, but no established target and no later uptake. Kept visible as unresolved, not called unrelated.'},
+ {id:'n06a',row:'N06',from:2,to:1,st:'S',side:1,H:14,rel:'Counterassessment',ends:'Comment 2 (ironic reply) → comment 1 (success claim)',warrant:'Apparent acknowledgement, public-service praise, "divina" set against an adverse account of waiting for care, and "gracias por nada" together support an ironic rejection of claimed effectiveness.'},
+ {id:'n06b',row:'N06',from:'nb',to:1,st:'U',side:-1,H:30,rel:'Counterassessment',ends:'N06-10 (neighbouring complaint) → comment 1',warrant:'Matching efficacy concern and compatible timing make the link plausible; no address or distinctive echo establishes it. Inclusion would add a parallel challenge.'},
+ {id:'n06c',row:'N06',from:'nb',to:2,st:'X',side:1,H:26,locked:true,rel:'Uptake',ends:'N06-10 → comment 2 (later ironic reply)',warrant:'The complaint predates the reply by almost two days, which rules out this link.'},
+ {id:'n07a',row:'N07',from:2,to:1,st:'U',side:1,H:14,rel:'Response',ends:'Comment 2 (abbreviated initials) → comment 1 (resignation demand)',warrant:'The same writer\'s use of the initials beside an overt insult in N11 supports a hostile hypothesis, but does not fix the expansion, target or attitude to resignation. N11 is lexical context only.'},
+ {id:'n08a',row:'N08',from:2,to:1,st:'S',side:1,H:14,rel:'Affiliative uptake',ends:'Comment 2 (heart response) → comment 1',warrant:'Displays limited positive affiliative uptake; endorsement scope remains open.'},
+ {id:'n09a',row:'N09',from:2,to:1,st:'S',side:1,H:14,rel:'Critical recategorisation',ends:'Comment 2 (role reversal) → comment 1',warrant:'The reply reverses which role noun contains the other, recasting a minister principally as a rentier. Judgement subtype and any allegation of illegality are not established.'}
+];
+const STN={S:'Supported inclusion',U:'Unresolved membership',X:'Reasoned exclusion'};
+
+/* ---------- drawing ---------- */
+
+/* 1 vault */
+let g=part(1,'Vault: archive');
+R(g,30,262,170,90);
+E('circle',{cx:178,cy:284,r:9,class:'ln'},g);P(g,'M169,284 H187 M178,275 V293','ln');
+T(g,44,286,'Instagram archive','b');T(g,44,303,'ExportComments','s');T(g,44,318,'public posts · June 2026','s');T(g,44,340,'CIAICO/2023/187','m mut',{style:'font-size:10px'});
+P(g,'M115,352 V372 H230 V390','cable',{'marker-end':'url(#ar)'});
+num(g,1,30,262);
+
+/* 2 distribution frame */
+g=part(2,'Distribution frame: selection');
+R(g,30,392,270,198,'desk');
+T(g,48,410,'Distribution frame','b s');
+[['platform: Instagram',418],['group label',442],['multi-comment group',466]].forEach(([s,y])=>{R(g,44,y,242,18,'gate',2);T(g,52,y+13,s,'s');E('rect',{x:225,y:y+4,width:10,height:10,class:'fillpanel'},g);});
+P(g,'M230,392 V500','cable');
+P(g,'M60,500 H262','ln');
+[60,90,120,150].forEach(x=>P(g,`M${x},500 V556`,'cable'));
+P(g,'M262,500 V510','cable');P(g,'M255,514 L269,508 M255,520 L269,514','ln');
+T(g,252,540,'E01 post: removed','xs mut',{'text-anchor':'end'});
+P(g,'M60,556 H300','cable');
+P(g,'M300,556 H378','cable',{'marker-end':'url(#ar)'});
+T(g,44,580,'4 posts · 11 groups · 32 comments','s b');
+num(g,2,30,392);
+
+/* 4 sealed */
+g=part(4,'Sealed boxes: not inspected');
+P(g,'M100,590 V612','ln dash');P(g,'M100,652 V662','ln dash');
+R(g,30,612,145,40,'sealed',3);R(g,40,622,125,20,'box',2);T(g,102,636,'source-post contents','xs',{'text-anchor':'middle'});
+R(g,30,662,145,40,'sealed',3);R(g,48,672,109,20,'box',2);T(g,102,686,'original videos','xs',{'text-anchor':'middle'});
+T(g,30,720,'not inspected','s mut');
+num(g,4,30,612);
+
+/* 3 tag + unplugged annotations */
+g=part(3,'Relabelling tag: source handling');
+P(g,'M320,556 V600','ln');
+E('polygon',{points:'190,612 330,612 345,627 345,712 190,712',class:'box'},g);
+E('circle',{cx:330,cy:606,r:4,class:'ln'},g);
+T(g,202,632,'aliases','b s');TL(g,202,648,['no handles, images, links','short excerpts quoted','reread from workbooks'],'s',15);
+R(g,200,738,18,12,'box',2);P(g,'M218,741 H226 M218,747 H226','ln');P(g,'M200,744 H192 C186,744 186,760 178,762','ln');
+T(g,234,744,'chapter annotations','s');T(g,234,758,'not used as answers','s mut');
+num(g,3,190,612);
+
+/* 15 derivation layer */
+g=part(15,'Derivation layer');
+R(g,350,30,1040,202,'layer',6);
+T(g,368,22,'Derivation layer: how the final form was made','b s');
+T(g,1388,22,'derivation, not validation','i mut',{'text-anchor':'end'});
+R(g,370,45,190,60,'box');T(g,382,66,'Literature comparison','b s');TL(g,382,82,['relational accounts;','annotation work 2024–2026'],'s',14);
+P(g,'M560,62 H598','ln dash',{'marker-end':'url(#ar)'});
+R(g,600,40,230,70,'box');T(g,612,60,'Existing approach','b s');TL(g,612,76,['dialogic stance, focus segmentation,','open notes; Hood for prosody'],'s',15);
+R(g,600,140,230,70,'box');T(g,612,160,'Preliminary form','b s');TL(g,612,176,['expanded boundary accounts,','separate decision fields'],'s',15);
+P(g,'M355,556 V125 H580','cable');
+P(g,'M580,125 V95 H598','ln',{'marker-end':'url(#ar)'});P(g,'M580,125 V155 H598','ln',{'marker-end':'url(#ar)'});
+E('circle',{cx:580,cy:125,r:3,class:'fillink'},g);E('circle',{cx:355,cy:556,r:3.5,class:'fillink'},g);
+T(g,372,142,'same 11 groups + neighbours','s');
+R(g,880,85,210,80,'box');T(g,892,105,'Comparison','b s');TL(g,892,121,['repeated address descriptions','→ shorter core','N02, N05 → unresolved state'],'s',15);
+P(g,'M830,75 H855 V110 H878','ln',{'marker-end':'url(#ar)'});P(g,'M830,175 H855 V140 H878','ln',{'marker-end':'url(#ar)'});
+R(g,1140,85,230,80,'box');T(g,1152,105,'Final form (Table 1)','b s');TL(g,1152,121,['3 membership states','4 core records','4 conditional extensions'],'s',15);
+P(g,'M1090,125 H1138','ln',{'marker-end':'url(#ar)'});
+P(g,'M1160,165 V246 H1070 V260','ln',{'marker-end':'url(#ar)'});
+T(g,1172,252,'installed, then reapplied to the same 11 groups','xs mut');
+num(g,15,350,30);
+
+/* 5 board + jack field */
+g=part(5,'Jack field: comparison groups');
+R(g,380,262,720,643,'board',6);
+T(g,394,282,'Switchboard: final form','b s');
+T(g,414,346,'group','xs mut');T(g,474,346,'comments, export order','xs mut');T(g,830,346,'neighbours','xs mut',{'text-anchor':'middle'});T(g,892,346,'Table 2','xs mut');
+R(g,798,352,64,512,'dashedbox',4);
+P(g,'M378,556 H386 M386,'+rowY(0)+' V'+rowY(10),'ln');
+const jackG={};
+ROWS.forEach((r,k)=>{const y=rowY(k);const rg=E('g',{'data-row':r.id,'data-rowinfo':r.id},g);jackG[r.id]=rg;
+  P(rg,`M386,${y} H396`,'ln');
+  for(let i=1;i<=r.n;i++){E('circle',{cx:jackX(i),cy:y,r:8,class:'jack'},rg);E('circle',{cx:jackX(i),cy:y,r:2.6,class:'jack-h'},rg);
+    T(rg,jackX(i)+10,y-9,String(i),'xs acc',{class:'t xs acc idx'});}
+});
+// N06-10 neighbour jack
+(function(){const y=rowY(RK.N06);const rg=jackG.N06;E('circle',{cx:NBX,cy:y,r:8,class:'jack nb'},rg);E('circle',{cx:NBX,cy:y,r:2.6,class:'jack-h'},rg);T(rg,842,y+4,'N06-10','xs m',{style:'font-size:9.5px'});})();
+num(g,5,380,262);
+
+/* 7 zones */
+g=part(7,'Zones: three scopes');
+T(g,1060,282,'available material','s mut',{'text-anchor':'end'});
+const zones={};
+zones.N06=E('g',{},g);R(zones.N06,466,rowY(RK.N06)-31,398,62,'zone',6);T(zones.N06,790,rowY(RK.N06)+45,'contextual window','xs acc',{'text-anchor':'end'});
+zones.N05=E('g',{},g);R(zones.N05,466,rowY(RK.N05)-33,134,64,'zone',6);T(zones.N05,606,rowY(RK.N05)+4,'contextual window','xs acc');
+num(g,7,1076,278);
+
+/* 6 ticket */
+g=part(6,'Call ticket: fixed question');
+R(g,560,272,400,48,'ticket',2);R(g,750,266,20,10,'box',2);
+T(g,574,292,'Fixed question: how is an initial evaluation endorsed, challenged,','s');
+T(g,574,308,'redirected or left without a recoverable response?','s');
+num(g,6,560,272);
+
+/* 8 designation strips */
+g=part(8,'Designation strips: occurrence record');
+ROWS.forEach((r,k)=>{const y=rowY(k);const rg=E('g',{'data-row':r.id,'data-rowinfo':r.id},g);
+  R(rg,396,y-11,58,22,'box',2);T(rg,403,y+4,r.id,'m');T(rg,448,y+4,String(r.n),'xs mut',{'text-anchor':'end'});});
+num(g,8,396,rowY(0)-22);
+
+/* 10 cords + lamps + tallies */
+g=part(10,'Cord lamps: membership states');
+function cubic(x1,x2,y,side,H){const y0=y+side*8,yc=y0+side*H;return {d:`M${x1},${y0} C${x1},${yc} ${x2},${yc} ${x2},${y0}`,pts:[[x1,y0],[x1,yc],[x2,yc],[x2,y0]]};}
+function bez(p,t){const u=1-t;return [0,1].map(j=>u*u*u*p[0][j]+3*u*u*t*p[1][j]+3*u*t*t*p[2][j]+t*t*t*p[3][j]);}
+function pointAtFrac(p,f){let L=[0],prev=bez(p,0);for(let i=1;i<=200;i++){const q=bez(p,i/200);L.push(L[i-1]+Math.hypot(q[0]-prev[0],q[1]-prev[1]));prev=q;}const target=f*L[200];for(let i=1;i<=200;i++){if(L[i]>=target)return bez(p,i/200);}return bez(p,1);}
+function lamp(p,x,y,st,r){const lg=E('g',{class:'lamp '+st},p);E('circle',{cx:x,cy:y,r:r||6.5},lg);const t=T(lg,x,y+3,st==='P'?'?':st,'');t.setAttribute('class','');return lg;}
+const cordEl={};
+CORDS.forEach(c=>{const k=RK[c.row],y=rowY(k);const x1=c.from==='nb'?NBX:jackX(c.from),x2=jackX(c.to);
+  const cv=cubic(x1,x2,y,c.side,c.H);
+  const cg=E('g',{class:'cord','data-row':c.row,'data-cord':c.id,'data-st':c.st},g);
+  E('path',{d:cv.d,class:'hit'},cg);
+  const vis=c.locked?0.84:1;
+  const pth=E('path',{d:cv.d,class:'c',pathLength:1,'stroke-dasharray':c.locked?'0.84 3':'1 3'},cg);
+  const mid=bez(cv.pts,0.5);
+  const lg=lamp(cg,mid[0],mid[1],c.st);
+  let pawl=null;
+  if(c.locked){const q=pointAtFrac(cv.pts,0.86);pawl=E('g',{class:'pawl'},cg);E('polygon',{points:`${q[0]-6},${q[1]-5} ${q[0]+6},${q[1]-5} ${q[0]},${q[1]+5}`,class:'pawl'},pawl);
+    cordEl.lockPt=q;}
+  cordEl[c.id]={g:cg,path:pth,lamp:lg,vis,data:c};
+});
+const tallyEl={};
+ROWS.forEach((r,k)=>{const y=rowY(k);const tg=E('g',{'data-row':r.id,'data-tally':r.id},g);tallyEl[r.id]=tg;
+  let x=900;(r.tally||[]).forEach((s,j)=>{if(r.id==='N06'&&j===2)x+=6;lamp(tg,x,y,s,5.5);x+=15;});
+  if(r.id==='N06'){P(tg,`M924,${y+10} V${y+14} H950 V${y+10}`,'ln mut');}
+  if(r.tag){T(tg,r.tally?x+4:892,y+4,r.tag,'xs mut');}
+});
+num(g,10,1100,rowY(0)-22);
+
+/* 20 lockout */
+g=part(20,'Chronology lockout');
+R(g,400,872,390,12,'desk',2);
+for(let x=412;x<790;x+=14)P(g,`M${x},872 V884`,'ln mut');
+T(g,400,899,'chronology lockout: earlier wording cannot be uptake of a later reply','xs');
+if(cordEl.lockPt){const q=cordEl.lockPt;P(g,`M${q[0]},${q[1]+6} V870`,'ln dot');}
+num(g,20,390,872);
+
+/* 12 test desk */
+g=part(12,'Test desk: extensions');
+R(g,1120,262,260,446,'desk',5);
+T(g,1142,282,'Test desk: extensions','b s');
+const IY=[292,396,500,604];
+const inst=[['Boundary','used: N02, N05'],['Prosodic scope','used: N06'],['Resource','used: M01, M02'],['Prominence','used: D1 · ties allowed']];
+const cmpT={};
+inst.forEach(([name,used],i)=>{const y0=IY[i];R(g,1134,y0,232,94,'box',3);T(g,1146,y0+18,name,'b s');T(g,1146,y0+86,used,'xs mut');});
+// boundary windows
+['narrower','candidate','wider'].forEach((l,j)=>{const x=1146+j*74;R(g,x,IY[0]+28,66,26,'gate',2);T(g,x+33,IY[0]+66,l,'xs mut',{'text-anchor':'middle'});cmpT[l]=T(g,x+33,IY[0]+45,'','s m acc',{'text-anchor':'middle'});});
+// prosody tracer
+(function(){const y0=IY[1];P(g,`M1148,${y0+58} H1352`,'ln mut');[1172,1214,1300].forEach(x=>E('circle',{cx:x,cy:y0+58,r:4,class:'fillink'},g));
+  P(g,`M1162,${y0+44} V${y0+38} H1334 V${y0+44}`,'ln');T(g,1248,y0+33,'extent','xs mut',{'text-anchor':'middle'});
+  P(g,`M1254,${y0+52} l6,12 M1262,${y0+52} l6,12`,'ln');T(g,1172,y0+74,'anchors','xs mut',{'text-anchor':'middle'});T(g,1264,y0+74,'interruption','xs mut',{'text-anchor':'middle'});})();
+// resource probe
+(function(){const y0=IY[2];['mode','position','producer'].forEach((l,j)=>{const x=1146+j*74;R(g,x,y0+28,66,22,'gate',2);T(g,x+33,y0+43,l,'xs',{'text-anchor':'middle'});P(g,`M${x+33},${y0+50} V${y0+58}`,'ln');});
+  P(g,`M1179,${y0+58} H1327`,'ln');T(g,1253,y0+72,'contribution of each resource','xs mut',{'text-anchor':'middle'});})();
+// prominence dials (no values)
+(function(){const y0=IY[3];['intensity','foreground','centrality','recurrence'].forEach((l,j)=>{const x=1166+j*55;E('circle',{cx:x,cy:y0+44,r:13,class:'gate'},g);P(g,`M${x},${y0+44} l-8,6`,'ln');E('circle',{cx:x,cy:y0+44,r:1.8,class:'fillink'},g);T(g,x,y0+70,l,'xs mut',{'text-anchor':'middle'});});})();
+num(g,12,1120,262);
+// leads (drawn above everything on the desk side)
+const leads=IY.map(y0=>E('path',{d:'',class:'lead'},g));
+const clipEnds=IY.map(()=>E('rect',{width:8,height:6,class:'fillink'},g));
+function setLead(i,rowId){const y=IY[i]+47;let d,ex,ey;
+  if(rowId){const ry=rowY(RK[rowId]);d=`M1134,${y} C1110,${y} 1112,${ry} 1094,${ry}`;ex=1088;ey=ry-3;leads[i].classList.add('on');}
+  else{d=`M1134,${y} C1124,${y} 1120,${y+10} 1118,${y+26}`;ex=1114;ey=y+26;leads[i].classList.remove('on');}
+  leads[i].setAttribute('d',d);clipEnds[i].setAttribute('x',ex);clipEnds[i].setAttribute('y',ey);}
+
+/* 13 spike */
+g=part(13,'Uncertainty spike');
+R(g,1120,722,260,183,'desk',5);
+T(g,1142,742,'Uncertainty by decision','b s');
+P(g,'M1140,756 V888','ln');R(g,1130,888,20,6,'box',1);
+['transcription','resource access','attribution','category','relation','boundary'].forEach((l,j)=>{const x=j%2?1262:1154,y=756+Math.floor(j/2)*38;R(g,x,y,104,28,'box',2);E('circle',{cx:x+8,cy:y+14,r:2.2,class:'fillmut'},g);T(g,x+56,y+18,l,'xs',{'text-anchor':'middle'});});
+T(g,1154,900,'no single confidence score','xs mut');
+num(g,13,1120,722);
+
+/* 11 stop keys */
+g=part(11,'Stop keys: stopping reasons');
+R(g,1405,262,185,138,'desk',5);
+T(g,1428,282,'Stop keys','b s');
+['analytically chosen','conversational completion','unavailable material'].forEach((l,j)=>{const y=294+j*30;R(g,1420,y,14,22,'box',3);E('circle',{cx:1427,cy:y+(j===1?16:6),r:4,class:'fillink'},g);T(g,1444,y+15,l,'s');});
+T(g,1420,390,'independent: can coexist','xs mut');
+num(g,11,1405,262);
+
+/* 18 register */
+g=part(18,'Register: output');
+R(g,1405,416,185,224,'box',3);R(g,1405,416,14,224,'desk',2);
+T(g,1430,440,'Register','b');
+T(g,1430,468,'Table 2','b s');T(g,1430,483,'11 rows: reading, consequence','xs');
+T(g,1430,510,'Table S1','b s');T(g,1430,525,'32 comment records','xs');
+T(g,1430,552,'Account','b s');T(g,1430,567,'one adjudicated reading','xs');
+R(g,1412,656,171,98,'stamp',2);R(g,1416,660,163,90,'stamp',1);
+T(g,1497,679,'NOT MEASURED','cap mut',{'text-anchor':'middle'});
+TL(g,1497,697,['reconstruction','agreement','accuracy','completion time'],'xs mut',13,{'text-anchor':'middle'});
+num(g,18,1405,416);
+
+/* legend (not a part) */
+(function(){const lg=E('g',{});R(lg,1405,772,185,133,'box',3);T(lg,1418,790,'Key','b s');
+ [['S','supported'],['U','unresolved'],['X','reasoned exclusion']].forEach(([s,l],j)=>{lamp(lg,1424,808+j*20,s,6);T(lg,1438,812+j*20,l,'s');});
+ P(lg,'M1418,872 H1434','ln dash');T(lg,1438,876,'proposed, unbuilt, outside set','xs');
+ R(lg,1418,884,16,12,'sealed',1);T(lg,1438,894,'not inspected','xs');})();
+
+/* 17 development bench */
+g=part(17,'Development bench');
+R(g,20,925,320,165,'desk',5);
+T(g,44,945,'Development bench','b s');
+[['M01','Post 189'],['M02','Post 61'],['D1','Ex. 3'],['E01','exchange'],['contrasts','constructed']].forEach(([a,b],j)=>{const x=56+j*62;E('circle',{cx:x,cy:982,r:9,class:'jack'},g);E('circle',{cx:x,cy:982,r:3,class:'jack-h'},g);T(g,x,1008,a,'m',{'text-anchor':'middle',style:'font-size:10px'});T(g,x,1022,b,'xs mut',{'text-anchor':'middle'});});
+T(g,44,1068,'kept apart from the comparison set','xs mut');
+P(g,'M20,960 H12 V218 H348','ln dash',{'marker-end':'url(#ar)'});
+T(g,20,210,'development examples','xs mut');
+num(g,17,20,925);
+
+/* 9 seating gauge */
+g=part(9,'Cord seating rule: threshold');
+R(g,370,925,330,165,'desk',5);
+T(g,394,945,'Cord seating rule','b s');
+// plug A seated
+R(g,388,968,30,14,'box',2);P(g,'M418,975 H432','cable');E('circle',{cx:440,cy:975,r:8,class:'jack'},g);E('circle',{cx:440,cy:975,r:2.6,class:'jack-h'},g);
+T(g,458,972,'Es cruel y eso me indigna','i');T(g,458,987,'eso relates the two meanings: seats','xs mut');
+// plug B unseated
+R(g,388,1022,30,14,'box',2);P(g,'M418,1029 H424','cable');E('circle',{cx:440,cy:1029,r:8,class:'jack'},g);E('circle',{cx:440,cy:1029,r:2.6,class:'jack-h'},g);
+T(g,458,1026,'Es cruel. La sala mide veinte metros.','i');T(g,458,1041,'adjacency only: does not seat','xs mut');
+T(g,394,1074,'constructed contrasts (§3.2)','xs mut');
+num(g,9,370,925);
+
+/* 14 operator */
+g=part(14,'Operator: one analyst');
+R(g,720,925,160,165,'box',5);
+E('circle',{cx:800,cy:966,r:12,class:'ln'},g);P(g,'M785,964 A15,15 0 0 1 815,964','ln');P(g,'M786,966 V972 M786,972 Q790,982 798,980','ln');
+P(g,'M778,1022 V996 Q778,986 790,986 H810 Q822,986 822,996 V1022','ln');
+T(g,800,1046,'Operator','b',{'text-anchor':'middle'});T(g,800,1062,'one analyst (author)','s',{'text-anchor':'middle'});
+P(g,'M800,925 V909','ln',{'marker-end':'url(#ar)'});T(g,808,919,'places cords by hand','xs mut');
+num(g,14,720,925);
+
+/* 19 proposed */
+g=part(19,'Second operator position: proposed');
+R(g,895,925,165,165,'dashedbox',5);
+E('circle',{cx:977,cy:966,r:12,class:'ln dash'},g);P(g,'M955,1022 V996 Q955,986 967,986 H987 Q999,986 999,996 V1022','ln dash');
+T(g,977,1046,'Second researcher','b',{'text-anchor':'middle'});T(g,977,1062,'proposed (§5.3)','s',{'text-anchor':'middle'});T(g,977,1077,'not carried out','xs mut',{'text-anchor':'middle'});
+num(g,19,895,925);
+
+/* 16 adjudication */
+g=part(16,'Adjudication seat');
+R(g,1120,925,260,165,'box',5);
+T(g,1142,945,'Adjudication','b s');
+P(g,'M1060,905 V915 H1250 V923','ln',{'marker-end':'url(#ar)'});T(g,1084,913,'records','xs mut');
+P(g,'M1150,962 V1000 H1186 M1150,1000 V1022 M1186,1000 V1022','ln');R(g,1148,996,40,6,'desk',1);
+T(g,1204,972,'same analyst','s b');
+T(g,1204,992,'1  existing-approach reading','s');T(g,1204,1008,'2  proposed record','s');
+T(g,1204,1034,'compatibility judgements,','xs mut');T(g,1204,1048,'not agreement scores','xs mut');
+P(g,'M1380,1000 H1396 V528 H1403','ln',{'marker-end':'url(#ar)'});
+num(g,16,1120,925);
+
+/* ---------- content ---------- */
+const PARTS={
+1:{name:'Vault',stands:'The Instagram archive from which the comparison set was drawn.',items:['Collected with ExportComments from public-facing posts, June 2026','Saved comments and available export metadata inspected','Inventory labels not treated as verified identities','Archive developed within project CIAICO/2023/187 (Generalitat Valenciana)'],src:'§3.1; Funding statement',fit:'strong'},
+2:{name:'Distribution frame',stands:'Rule-based selection of the comparison set, applied before any case reading.',items:['Criteria: platform, group labels, group size (multi-comment groups)','The entire source post used for E01 is removed','Exhaustive within the archive','Result: 4 source posts, 11 groups, 32 comments','Spanish and Catalan; one Portuguese reply in N09'],src:'§3.1',fit:'strong',note:'A frame applies fixed rules without reading the lines, which matches selection before reading.'},
+3:{name:'Relabelling tag',stands:'Source handling and data minimisation.',items:['Comments and supplied neighbours reread from the original workbooks','Selected records match the cleaned corpus','Stable aliases; handles, profile images and direct links omitted','Only short excerpts quoted; other content paraphrased','Prior chapter annotations not used as answers (the unplugged lead)','Source versions, row identifiers and grouping-field origin kept in working records'],src:'§3.1',fit:'strong'},
+4:{name:'Sealed boxes',stands:'Material that exists but was not inspected.',items:['Source-post contents','Original videos','An unavailable video can inform a sourced hypothesis but cannot become an inspected component','Export-group membership does not establish native reply-to edges'],src:'§3.1; §3.3',fit:'strong'},
+5:{name:'Jack field',stands:'The 11 comparison groups: one row per group, one jack per comment in export order.',items:['N01 2 · N02 6 · N03 4 · N04 3 · N05 3 · N06 2','N07 2 · N08 2 · N09 2 · N10 3 · N11 3 (32 in total)','Neighbour column: supplied neighbours; the only one named is N06-10','Export order is an evidential starting point, not a boundary decision'],src:'Table 2; §2.2; §3.1; §4.5',fit:'strong',note:'A cord can join any two jacks, so a relation can skip an intervening comment, as in N05.'},
+6:{name:'Call ticket',stands:'The fixed explanatory question.',items:['Common question for all groups: how an initial evaluation is endorsed, challenged, redirected or left without a recoverable response, and which archived components explain that development','Held fixed while alternative boundaries are considered','A changed question needs a new or revised focus, not silent expansion'],src:'§3.3; §3.6',fit:'strong'},
+7:{name:'Zones',stands:'The three scopes of an analysis.',items:['Available material: what was inspected (the whole board)','Contextual window: material consulted to assess an interpretation, including contrary evidence; external knowledge separately sourced (shaded band)','Analytical focus: components joined by relations supported for the question (cords with S lamps); it can be discontinuous'],src:'§3.2',fit:'partial',note:'The focus is a set of relations, so it is shown by cords, not by a region.'},
+8:{name:'Designation strips',stands:'The occurrence record kept for each evaluative occurrence.',items:['Anchor: wording, visual region, sequence or relation among resources','Voice; target and evaluated aspect; polarity; category; interpretive grounds','Affect also records experiencer and trigger','Invoked evaluation: observed signal, context, activated norm, proposed reading and a plausible alternative','A represented evaluation is kept apart from the current author\'s endorsement'],src:'§3.2',fit:'partial',note:'A strip sits at one point; the article lets an anchor point to distributed evidence.'},
+9:{name:'Cord seating rule',stands:'The configuration threshold.',items:['Combination: at least two warranted meanings whose joint organisation is specified','Configuration: at least one warranted evaluative meaning and an organising relation to another substantive component','Evidence: a scoped connective, quotation and response, or a resource–referent connection','The desired interpretation cannot be the sole warrant','Bare target attribution excluded by convention'],src:'§3.2',fit:'strong'},
+10:{name:'Cord lamps',stands:'The membership state of one proposed relation under the fixed question.',items:['Supported inclusion: observable connection and contextual warrant; category or force may stay uncertain','Unresolved membership: a plausible, consequential connection without warrant to prefer it; missing warrant and consequence stated','Reasoned exclusion: no evidenced relation required, or evidence contradicts the link; reason recorded','One component can hold different states for different proposed relations (N06-10)','Uncertainty about meaning is recorded separately from membership (N03)'],src:'§3.3; §4.5; Table 2',fit:'strong',note:'Lamps sit on cords only where the article names both endpoints (N05–N09). N02 and N03 show the Table 2 tally at the row end.'},
+11:{name:'Stop keys',stands:'Why an inquiry stops.',items:['Analytically chosen','Supported as conversational completion','Imposed by unavailable material','The conditions can coexist, so the keys are independent'],src:'§3.3',fit:'strong'},
+12:{name:'Test desk',stands:'The four conditional extensions of the final record.',items:['Boundary: narrower, candidate and plausible wider selection; when alternative membership could change the explanation. Used for N02, N05','Prosodic scope: anchors, voice, direction and extent, continuity and interruption; when a reading spreads beyond its anchors. Used for N06','Resource: mode, position, producer, relation endpoints, contribution; when composition could change attribution, reference or interpretation. Used for M01, M02','Prominence: dimension, scope, warrant, optional ordering with ties; when intensity, foregrounding, centrality or recurrence is part of the question. Used for D1'],src:'Table 1; §4.1–4.5; §6',fit:'weak',note:'Activation is a judgement about consequences, so leads are clipped on by hand. The prosody tracer is the weakest part: meaning spreading across wording is not a signal on a wire.'},
+13:{name:'Uncertainty spike',stands:'Uncertainty attached to the decision it concerns.',items:['Transcription, resource access, attribution, category, relation, boundary','No single confidence rating for a configuration','The record closes with remaining uncertainty and access limits visible','New evidence or a changed question produces a traceable revision'],src:'§3.4; §3.5',fit:'partial'},
+14:{name:'Operator',stands:'The analyst who applies the record.',items:['One analyst, the author (CRediT: conceptualization, formal analysis, methodology)','No other coder or automated annotation step is described','Every cord is placed and every extension clipped on by hand'],src:'§3.6; CRediT statement',fit:'strong'},
+15:{name:'Derivation layer',stands:'How the final form was derived.',items:['Existing approach: Du Bois (2007) dialogic stance with Kiesling et al. (2018) focus segmentation, activity descriptions and open rationale notes; Hood for evaluative spread','Kiesling et al.\'s numerical scales and trained-annotation experiment not reproduced','Preliminary form preserved before the case comparison','Both received the same groups and neighbours','Revisions: three membership states; streamlined core with conditional extensions','Final form reapplied to the same cases: part of derivation, not a new validation round'],src:'§3.1; §3.6; §4.5',fit:'weak',note:'A real exchange does not rewire itself by comparing logs. The layer sits behind the board and is fed by the same bus.'},
+16:{name:'Adjudication seat',stands:'Adjudication of the two accounts.',items:['The same analyst as the operator','Each raw group and its neighbours reread','Fixed order: existing-approach reading first, proposed record second','Preliminary accounts prepared in parallel, without controlled order','Both approaches, both earlier accounts and the development examples known throughout','Outcome: compatibility judgements, not independent agreement'],src:'§3.6',fit:'strong'},
+17:{name:'Development bench',stands:'Development material, kept apart from the comparison set.',items:['M01: Post 189, Figure 8 in Sikorskii & Carrió-Pastor (2026b); resource composition','M02: Post 61, Figure 15 in the same article; resource contribution and exclusion','D1: Example 3 in Sikorskii et al. (2026); joint evaluation and functional prominence','E01: archival exchange; boundary illustration','Constructed contrasts: thought experiments, not corpus observations'],src:'§3.1; §4.1–4.4',fit:'strong'},
+18:{name:'Register',stands:'What the procedure outputs.',items:['Table 2: adjudicated reading and final-record consequence for 11 groups','Supplementary Table S1: minimised, aliased records for all 32 comments','One adjudicated analytical account','Not measured: reconstruction by another researcher, agreement, accuracy, completion time'],src:'§3.6; §4.5; Data availability',fit:'strong'},
+19:{name:'Second operator position',stands:'The proposed next assessment. Not carried out.',items:['Two researchers, the same new material, fixed questions','Records preserved before discussion','Reconstruction distinguished from agreement','Matched baseline with open notes, context and qualitative interpretation','Time locating context separated from time completing fields'],src:'§5.3',fit:'strong'},
+20:{name:'Chronology lockout',stands:'The one exclusion rule that works mechanically.',items:['Earlier wording cannot be uptake of a later reply, although it may answer the same initial contribution','Applied in N06: N06-10 predates the ironic reply by almost two days'],src:'§3.3; §4.5',fit:'strong',note:'Every other membership decision is placed by hand.'}
+};
+const FIT={strong:'Mapping: strong',partial:'Mapping: partial',weak:'Mapping: weak'};
+
+const PIPE=[
+ {hl:[1],t:'Archive',x:'Comments collected with ExportComments from public-facing Instagram posts in June 2026.',s:'§3.1'},
+ {hl:[2],t:'Selection',x:'Groups selected by platform, group label and group size before any case reading. The whole source post used for E01 is removed. Result: 4 posts, 11 groups, 32 comments.',s:'§3.1'},
+ {hl:[3,4],t:'Source handling',x:'Comments and supplied neighbours reread from the original workbooks and matched to the cleaned corpus. Users aliased; short excerpts only. Source-post contents and videos not inspected. Prior chapter annotations not used as answers.',s:'§3.1'},
+ {hl:[17],t:'Development material',x:'M01, M02, D1, E01 and constructed contrasts inform the procedure. They stay outside the comparison set.',s:'§3.1; §4.1–4.4'},
+ {hl:[15],t:'Derivation',x:'The existing approach and a fuller preliminary form were applied to the same groups and neighbours. Comparing the records produced the revisions: three membership states, a short core and conditional extensions.',s:'§3.6; §4.5'},
+ {hl:[5],t:'Final form reapplied',x:'The final form is reapplied to the same 11 groups to make its decisions inspectable. The article counts this as derivation, not a new validation round.',s:'§3.6'},
+ {hl:[6],t:'Fixed question',x:'One explanatory question is held fixed for every group. A changed question needs a new or revised focus.',s:'§3.3; §3.6'},
+ {hl:[7],t:'Scopes',x:'Available material is what was inspected. The contextual window is what was consulted, including contrary evidence. The focus holds the components joined by supported relations and can be discontinuous.',s:'§3.2'},
+ {hl:[8],t:'Anchors and roles',x:'Each occurrence records anchor, voice, target and aspect, polarity, category and grounds. Invoked evaluation adds signal, context, norm, reading and an alternative.',s:'§3.2'},
+ {hl:[9],t:'Threshold',x:'A configuration needs at least one warranted evaluative meaning and an evidenced organising relation to another substantive component. Adjacency alone does not seat a cord.',s:'§3.2'},
+ {hl:[10,20],t:'Membership',x:'Each proposed relation receives a state: supported, unresolved or reasoned exclusion. The chronology lockout blocks earlier wording from being uptake of a later reply.',s:'§3.3; Table 2'},
+ {hl:[12],t:'Extensions',x:'Boundary, prosodic-scope, resource and prominence records are added only when they could change the explanation.',s:'Table 1'},
+ {hl:[13,11],t:'Closing the record',x:'Uncertainty is attached to the decision it concerns. Stopping reasons are recorded and can coexist.',s:'§3.3; §3.5'},
+ {hl:[14,16],t:'Adjudication',x:'One analyst rereads each raw group and its neighbours: existing-approach reading first, proposed record second. Both approaches and the development examples were known throughout.',s:'§3.6'},
+ {hl:[18],t:'Output',x:'Table 2 (11 rows), Supplementary Table S1 (32 comment records) and one adjudicated account. Reconstruction, agreement, accuracy and completion time were not measured.',s:'§3.6'},
+ {hl:[19],t:'Proposed next step',x:'Two researchers, new material, fixed questions, records preserved before discussion. Not carried out.',s:'§5.3'}
+];
+const CASES={
+ N05:[
+  {hl:[5,7],t:'Row N05',x:'Three comments in export order. 1: a challenge about eight years of construction. 2: an elongated insult. 3: a comment addressing the initial questioner and extending accountability to forty years.',cords:{}},
+  {hl:[10],t:'Comment 3 → comment 1',x:'Address and reformulation warrant supported inclusion. The cord passes over comment 2: explanatory relevance is not export proximity.',cords:{n05a:'S'}},
+  {hl:[10],t:'Comment 2 → comment 1, proposed',x:'Proposed relation: the insult as a response within the accountability exchange.',cords:{n05a:'S',n05b:'P'}},
+  {hl:[10],t:'Unresolved',x:'The insult is a plausible member of a responsive account but has no established target and no later uptake. It stays visible as unresolved instead of being called unrelated.',cords:{n05a:'S',n05b:'U'}},
+  {hl:[12],t:'Boundary extension',x:'Alternative membership could change the explanation, so the boundary record is activated: the supported selection 1 + 3 against its nearest plausible extension, the intervening comment 2.',cords:{n05a:'S',n05b:'U'},clip:{0:'N05'},cmp:true},
+  {hl:[10,13],t:'Result',x:'Two supported members, one unresolved (Table 2). The repeated insult formula does not supply E01\'s retrospective uptake cue, and the reframing does not show that both questioners blame the same actors.',cords:{n05a:'S',n05b:'U'},clip:{0:'N05'},cmp:true,tally:true}
+ ],
+ N06:[
+  {hl:[5,7],t:'Row N06',x:'1: a housing-policy success claim. 2: a reply opening with apparent acknowledgement of work, expanding into public-service praise and closing with "gracias por nada". Neighbour N06-10: a top-level complaint on the same efficacy issue.',cords:{}},
+  {hl:[10],t:'Comment 2 → comment 1',x:'The cues together support an ironic rejection of claimed effectiveness. Counterassessment: supported.',cords:{n06a:'S'}},
+  {hl:[12],t:'Prosodic-scope extension',x:'The ironic reading spreads beyond its anchors, so the scope record is activated. The coded anchors (for example "divina" set against an adverse account of waiting for care), the broader reading and the focal exchange get separate boundaries. The praise sequence is not recoded as separate negative Judgements.',cords:{n06a:'S'},clip:{1:'N06'}},
+  {hl:[10],t:'N06-10 → comment 1',x:'Proposed as a counterassessment of the claim. Matching efficacy concern and compatible timing make it plausible; no address or distinctive echo establishes it. Unresolved. Inclusion would add a parallel challenge.',cords:{n06a:'S',n06b:'U'},clip:{1:'N06'}},
+  {hl:[20,10],t:'N06-10 → comment 2',x:'Proposed as uptake of the ironic reply. The complaint predates that reply by almost two days, so the chronology lockout blocks the cord: reasoned exclusion.',cords:{n06a:'S',n06b:'U',n06c:'X'},clip:{1:'N06'}},
+  {hl:[10],t:'Result',x:'Two supported members, one unresolved contextual candidate, one excluded uptake edge (Table 2). N06-10 is one candidate with two entries, not two additional comments. An affiliation question could select it for another relation.',cords:{n06a:'S',n06b:'U',n06c:'X'},clip:{1:'N06'},tally:true}
+ ]
+};
+
+/* ---------- state + render ---------- */
+const $=id=>document.getElementById(id);
+let mode='explore',step=0,sel=null,timer=null;
+const allParts=[...svg.querySelectorAll('[data-part]')];
+
+function setCord(id,st){const c=cordEl[id];if(!c)return;c.g.setAttribute('data-st',st);
+  c.path.style.strokeDashoffset=st==='off'?c.vis:0;
+  if(st!=='off'){c.lamp.setAttribute('class','lamp '+st);c.lamp.querySelector('text').textContent=st==='P'?'?':st;}}
+function allCords(st){CORDS.forEach(c=>setCord(c.id,st==='final'?c.st:st));}
+function setCmp(on){cmpT.narrower.textContent='';cmpT.candidate.textContent=on?'1 + 3':'';cmpT.wider.textContent=on?'+ 2':'';}
+function setZone(id){Object.keys(zones).forEach(z=>zones[z].style.display=(z===id)?'':'none');}
+
+function classes({hl=[],built=null,focus=null,keep=[]}){
+  allParts.forEach(gp=>{const n=+gp.dataset.part;
+    gp.classList.toggle('hl',hl.includes(n)||sel===n);
+    gp.classList.toggle('pending',!!built&&!built.has(n));
+    gp.classList.toggle('dim',!!focus&&!hl.includes(n)&&!keep.includes(n)&&![5,7,8,10].includes(n));});
+  svg.querySelectorAll('[data-row]').forEach(e=>e.classList.toggle('dim',!!focus&&e.dataset.row!==focus));
+  svg.classList.toggle('show-idx',!!focus);
+}
+
+function ro({eye,title,text,note,list,src,badge,badgeCls}){
+  $('roEye').textContent=eye||'';$('roTitle').textContent=title||'';$('roText').textContent=text||'';
+  const n=$('roNote');n.hidden=!note;n.textContent=note||'';
+  $('roSrc').textContent=src?('Source: '+src):'';
+  const b=$('roBadge');b.hidden=!badge;b.textContent=badge||'';b.className='badge '+(badgeCls||'');
+  const ul=$('roList');ul.innerHTML='';(list||[]).forEach(s=>{const li=document.createElement('li');li.textContent=s;ul.appendChild(li);});
+}
+
+function render(){
+  const btns={explore:'mExplore',pipe:'mPipe',N05:'mN05',N06:'mN06'};
+  Object.entries(btns).forEach(([m,id])=>$(id).setAttribute('aria-pressed',String(m===mode)));
+  const steps=mode==='pipe'?PIPE:CASES[mode];
+  $('bPrev').disabled=!steps||step===0;$('bNext').disabled=!steps||step===steps.length-1;$('bPlay').disabled=!steps;
+  $('stepNo').textContent=steps?`${step+1} / ${steps.length}`:'';
+  [0,1,2,3].forEach(i=>setLead(i,null));setCmp(false);
+  Object.values(tallyEl).forEach(t=>t.style.opacity='');
+  if(mode==='explore'){
+    allCords('final');setZone('N06');classes({});
+    if(sel==null){ro({eye:'Overview',title:'How to read the machine',text:'Each numbered part stands for one element of the method. Select a part to see what it stands for, the values the article gives and where. Pipeline shows the order of work. Cases N05 and N06 show membership decisions being made on one row.',list:['Lamps: S supported, U unresolved, X reasoned exclusion','A lamp belongs to a cord (a proposed relation), not to a comment','Dashed outlines: proposed, unbuilt or outside the selected set','Hatched boxes: material not inspected']});}
+    updateIndex();return;
+  }
+  const s=steps[step];
+  if(mode==='pipe'){
+    const built=new Set();PIPE.slice(0,step+1).forEach(p=>p.hl.forEach(n=>built.add(n)));
+    allCords(built.has(10)?'final':'off');setZone(built.has(7)?'N06':null);
+    classes({hl:s.hl,built});
+    ro({eye:`Pipeline · step ${step+1} of ${PIPE.length}`,title:s.t,text:s.x,src:s.s,list:s.hl.map(n=>`Part ${n}: ${PARTS[n].name}`)});
+  }else{
+    allCords('off');Object.entries(s.cords).forEach(([id,st])=>setCord(id,st));
+    setZone(mode);
+    if(s.clip)Object.entries(s.clip).forEach(([i,r])=>setLead(+i,r));
+    setCmp(!!s.cmp);
+    tallyEl[mode].style.opacity=s.tally?'1':'0';
+    classes({hl:s.hl,focus:mode,keep:s.clip?[12]:[]});
+    const row=ROWS[RK[mode]];
+    ro({eye:`Case ${mode} · step ${step+1} of ${steps.length}`,title:s.t,text:s.x,src:'§4.5; Table 2',list:s.tally?[`Table 2 reading: ${row.read}`,`Consequence: ${row.cons}`]:s.hl.map(n=>`Part ${n}: ${PARTS[n].name}`)});
+  }
+  updateIndex();
+}
+
+function showPart(n){mode='explore';stop();sel=n;render();const p=PARTS[n];
+  ro({eye:`Part ${n}`,title:p.name,text:p.stands,note:p.note,list:p.items,src:p.src,badge:FIT[p.fit],badgeCls:p.fit});}
+function showCord(id){const c=cordEl[id].data;mode='explore';stop();sel=10;render();
+  ro({eye:`${c.row} · membership entry`,title:c.rel,text:c.warrant,list:[`Endpoints: ${c.ends}`,`State: ${STN[c.st]}`,`Question: the fixed common question (part 6)`],src:'§4.5; Table 2',badge:STN[c.st],badgeCls:c.st});}
+function showRow(id){const r=ROWS[RK[id]];mode='explore';stop();sel=null;render();
+  ro({eye:`Group ${id} · ${r.n} comments`,title:'Table 2 entry',text:r.read+'.',list:[`Final-record consequence: ${r.cons}`,id==='N09'?'Includes a Portuguese reply':null,id==='N07'?'N11 is used as lexical context only; it is not inserted into the exchange':null,id==='N03'?'The final reply belongs through address and echo; its evaluative force is recorded separately':null].filter(Boolean),src:'Table 2; §4.5',note:(CASES[id]?'Step through this case with the Case '+id+' button.':null)});}
+
+function updateIndex(){document.querySelectorAll('.idx-btn').forEach(b=>b.setAttribute('aria-current',String(mode==='explore'&&+b.dataset.n===sel)));}
+function stop(){if(timer){clearInterval(timer);timer=null;$('bPlay').textContent='Play';}}
+function setMode(m){stop();mode=m;step=0;sel=null;render();}
+
+svg.addEventListener('click',e=>{
+  const c=e.target.closest('[data-cord]');if(c&&!c.closest('.dim')){showCord(c.dataset.cord);return;}
+  const r=e.target.closest('[data-rowinfo]');if(r){showRow(r.dataset.rowinfo);return;}
+  const t=e.target.closest('[data-tally]');if(t){showRow(t.dataset.tally);return;}
+  const p=e.target.closest('[data-part]');if(p)showPart(+p.dataset.part);
+});
+svg.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const p=e.target.closest('[data-part]');if(p){e.preventDefault();showPart(+p.dataset.part);}});
+$('mExplore').onclick=()=>setMode('explore');$('mPipe').onclick=()=>setMode('pipe');
+$('mN05').onclick=()=>setMode('N05');$('mN06').onclick=()=>setMode('N06');
+$('bPrev').onclick=()=>{stop();if(step>0){step--;render();}};
+$('bNext').onclick=()=>{stop();const s=mode==='pipe'?PIPE:CASES[mode];if(s&&step<s.length-1){step++;render();}};
+$('bPlay').onclick=()=>{if(timer){stop();return;}const s=mode==='pipe'?PIPE:CASES[mode];if(!s)return;if(step>=s.length-1)step=0;render();$('bPlay').textContent='Pause';
+  timer=setInterval(()=>{if(step<s.length-1){step++;render();}else stop();},4200);};
+
+// parts index
+const idx=$('index');Object.keys(PARTS).map(Number).sort((a,b)=>a-b).forEach(n=>{const b=document.createElement('button');b.className='idx-btn';b.dataset.n=n;b.innerHTML=`<b>${n}</b><span></span>`;b.querySelector('span').textContent=`${PARTS[n].name}: ${PARTS[n].stands.replace(/\.$/,'')}`;b.onclick=()=>{showPart(n);document.querySelector('.console').scrollIntoView({block:'nearest'});};idx.appendChild(b);});
+
+render();
+})();
+</script>
