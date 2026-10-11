@@ -1,0 +1,667 @@
+<title>Membership Survey Chart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+/* Layout: a deliberately dark observatory chart. Sticky readout above a wide survey plate; caption and notes below.
+   Single-theme by choice: the sky is dark in either host theme, so every colour is set explicitly. */
+:root{
+  --sky:#060A14; --sky2:#0A1120; --panel:#0D1628; --panel2:#101B31;
+  --line:#7F95B8; --faint:#1F2C45; --ink:#DCE6F5; --muted:#8C9BB4;
+  --accent:#7CD4FF; --wash:rgba(124,212,255,.09); --beam:rgba(124,212,255,.10);
+  --s:#5BE3A1; --u:#FFC453; --x:#FF6D5E; --star:#FFF1CF; --body:#BFD4FF; --grey:#56647D; --lampText:#06101A;
+  --f-label:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --f-body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  color-scheme:dark;
+}
+body{background:var(--sky);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+.wrap{max-width:1640px;margin:0 auto;padding-inline:20px;padding-block:24px 56px}
+header.top{display:grid;gap:6px;max-width:74ch;margin-bottom:14px}
+.eyebrow{font-family:var(--f-label);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-label);font-weight:600;font-size:clamp(28px,3.4vw,42px);line-height:1.05;margin:0;text-wrap:balance;letter-spacing:.01em}
+.lede{margin:0;color:var(--muted);font-size:15.5px}
+.console{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--sky);border-bottom:1px solid var(--faint);padding-block:10px;display:grid;gap:10px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:var(--f-label)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button,.btn{font:inherit;font-size:15px;background:var(--panel);color:var(--ink);border:0;padding:6px 13px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--sky)}
+.btn{border:1px solid var(--line);border-radius:4px}
+.btn:disabled{opacity:.35;cursor:default}
+.seg button:focus-visible,.btn:focus-visible,.idx-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.stepno{font-family:var(--f-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:7ch}
+.readout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:6px 28px;max-height:38vh;overflow:auto}
+.ro-head{grid-column:1/-1;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.ro-head h2{font-family:var(--f-label);font-weight:600;font-size:21px;margin:0}
+.badge{font-family:var(--f-label);font-size:13px;letter-spacing:.04em;padding:0 9px;border-radius:999px;border:1px solid currentColor}
+.badge.strong,.badge.S{color:var(--s)} .badge.partial,.badge.U{color:var(--u)} .badge.weak,.badge.X{color:var(--x)}
+#roText{margin:0;font-size:15px;max-width:68ch}
+#roNote{margin:6px 0 0;font-size:14px;color:var(--muted);max-width:68ch}
+#roList{margin:0;padding-left:18px;font-size:14px;display:grid;gap:2px}
+#roSrc{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-top:4px}
+@media (max-width:820px){.readout{grid-template-columns:minmax(0,1fr)}}
+
+.plate{margin-top:14px;overflow-x:auto;border:1px solid var(--faint);background:var(--sky)}
+.plate svg{display:block;width:100%;min-width:1240px;height:auto}
+.t{font-family:var(--f-label);font-size:12.5px;fill:var(--ink)}
+.t.s{font-size:11px} .t.xs{font-size:10px} .t.b{font-weight:600} .t.h{font-weight:600;font-size:13.5px}
+.t.m{font-family:var(--f-mono);font-size:11px} .t.mut{fill:var(--muted)} .t.acc{fill:var(--accent)}
+.t.i{font-family:var(--f-body);font-style:italic;font-size:11.5px}
+.t.cap{letter-spacing:.14em;font-weight:600;font-size:11px}
+.box{fill:var(--panel);stroke:var(--line);stroke-width:1}
+.box2{fill:var(--panel2);stroke:var(--line);stroke-width:1}
+.field{fill:var(--sky2);stroke:var(--line);stroke-width:1.4}
+.layer{fill:none;stroke:var(--line);stroke-width:1.1;stroke-dasharray:7 5;opacity:.8}
+.dashedbox{fill:none;stroke:var(--muted);stroke-width:1.1;stroke-dasharray:4 3}
+.ln{fill:none;stroke:var(--line);stroke-width:1.2}
+.ln.dash{stroke-dasharray:4 3} .ln.dot{stroke-dasharray:1.5 3}
+.grid{stroke:var(--faint);stroke-width:1}
+.beamfill{fill:rgba(124,212,255,.13)}
+.filter{fill:rgba(124,212,255,.06);stroke:var(--accent);stroke-width:1.1}
+.mask{fill:#000;stroke:var(--x);stroke-width:1}
+.dust{fill:#2A3550;opacity:.85}
+.bgstar{fill:#C9D6EE}
+.star{fill:var(--star)} .bodyc{fill:var(--body)} .greyb{fill:var(--grey)}
+.nb{fill:none;stroke:var(--body);stroke-width:1.2;stroke-dasharray:2 2}
+.fov{fill:var(--wash);stroke:var(--accent);stroke-width:1;stroke-dasharray:3 4}
+.pill{fill:var(--panel);stroke:var(--faint);stroke-width:1}
+.arrowhead{fill:var(--line)}
+.num-c{fill:var(--sky);stroke:var(--line);stroke-width:1.2}
+.num-t{font-family:var(--f-mono);font-size:11px;font-weight:600;fill:var(--ink)}
+.stamp{fill:none;stroke:var(--muted);stroke-width:1.2}
+/* relations */
+.rel{transition:opacity .6s}
+.rel[data-st="off"]{opacity:0;pointer-events:none}
+.rel .hit{fill:none;stroke:transparent;stroke-width:12;cursor:pointer}
+.trk{fill:none;stroke-width:1.6}
+.rel[data-st="S"] .trk{stroke:var(--s)}
+.rel[data-st="U"] .trk{stroke:var(--u);stroke-dasharray:5 4}
+.rel[data-st="X"] .trk{stroke:var(--x)}
+.rel[data-st="P"] .trk{stroke:var(--muted);stroke-dasharray:1.5 4}
+.rel[data-st="P"] .mover,.rel[data-st="P"] .lamp,.rel[data-st="P"] .cone{display:none}
+.rel[data-st="P"] .plamp{display:inline}
+.plamp{display:none}
+.rel:not([data-st="X"]) .cone{display:none}
+.cone{fill:var(--x);opacity:.9}
+.lamp circle{stroke:var(--sky);stroke-width:1.2}
+.lamp text{font-family:var(--f-mono);font-size:8.5px;font-weight:600;text-anchor:middle;fill:var(--lampText)}
+.lamp.S circle{fill:var(--s)} .lamp.U circle{fill:var(--u)} .lamp.X circle{fill:var(--x)} .lamp.P circle{fill:var(--muted)}
+.sb{transition:opacity .5s}
+.sb.hide{opacity:0}
+/* parts */
+.part{cursor:pointer;transition:opacity .45s}
+.part:focus{outline:none}
+.part:hover .num-c,.part:focus-visible .num-c{stroke:var(--accent);stroke-width:2.4}
+.hl .box,.hl .box2,.hl .field,.hl .layer,.hl .dashedbox,.hl .pill{stroke:var(--accent);stroke-width:2}
+.hl .num-c{fill:var(--accent);stroke:var(--accent)}
+.hl .num-t{fill:var(--sky)}
+.dim{opacity:.16} .pending{opacity:.06}
+[data-row],[data-part]{transition:opacity .45s}
+.idx{opacity:0;transition:opacity .3s} .show-idx [data-row]:not(.dim) .idx{opacity:1}
+.beam{opacity:0;transition:opacity .5s}.beam.on{opacity:1}
+@media (prefers-reduced-motion: reduce){.rel,.part,[data-row],[data-part],.idx,.beam,.sb{transition:none}}
+
+.index{margin-top:18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}
+.idx-btn{display:flex;gap:8px;align-items:baseline;text-align:left;font-family:var(--f-label);font-size:14.5px;color:var(--ink);background:var(--panel);border:1px solid var(--faint);border-radius:4px;padding:6px 10px;cursor:pointer}
+.idx-btn b{font-family:var(--f-mono);font-size:12px;min-width:2ch;color:var(--accent)}
+.idx-btn[aria-current="true"]{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.notes{margin-top:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:28px 40px}
+.notes section{min-width:0}
+.notes h3{font-family:var(--f-label);font-weight:600;font-size:15px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px;color:var(--muted)}
+figcaption,.notes p,.notes li{font-size:15px;max-width:72ch}
+.notes ul,.notes ol{margin:0;padding-left:20px;display:grid;gap:6px}
+figcaption{margin-top:16px}
+figcaption b{font-family:var(--f-label)}
+.small{font-size:13px;color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Methodology anatomy · RESLA manuscript v0.12</span>
+    <h1>Membership and boundary procedure</h1>
+    <p class="lede">The method drawn as an astronomical survey. Select a numbered part, run the pipeline, or step through systems N05 and N06.</p>
+  </header>
+
+  <div class="console">
+    <div class="controls" role="toolbar" aria-label="View controls">
+      <div class="seg" role="group" aria-label="Mode">
+        <button id="mExplore" aria-pressed="true">Parts</button>
+        <button id="mPipe" aria-pressed="false">Pipeline</button>
+        <button id="mN05" aria-pressed="false">System N05</button>
+        <button id="mN06" aria-pressed="false">System N06</button>
+      </div>
+      <button class="btn" id="bPrev" disabled>Previous</button>
+      <button class="btn" id="bPlay" disabled>Play</button>
+      <button class="btn" id="bNext" disabled>Next</button>
+      <span class="stepno" id="stepNo"></span>
+    </div>
+    <section class="readout" aria-live="polite">
+      <div class="ro-head"><span class="eyebrow" id="roEye"></span><h2 id="roTitle"></h2><span class="badge" id="roBadge" hidden></span></div>
+      <div><p id="roText"></p><p id="roNote" hidden></p><div id="roSrc"></div></div>
+      <ul id="roList"></ul>
+    </section>
+  </div>
+
+  <figure style="margin:0">
+    <div class="plate">
+      <svg id="svg" viewBox="0 0 1600 1120" role="group" aria-label="Anatomy of the membership and boundary procedure drawn as an astronomical survey: archive and selection function on the left, eleven comment systems in the survey field at the centre, instruments and error budget on the right, calibration above, observer and data reduction below.">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker>
+          <filter id="glow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter>
+          <radialGradient id="halo"><stop offset="0" stop-color="#FFF1CF" stop-opacity=".55"/><stop offset="1" stop-color="#FFF1CF" stop-opacity="0"/></radialGradient>
+        </defs>
+      </svg>
+    </div>
+    <figcaption>
+      <b>Figure.</b> Anatomy of the membership-and-boundary procedure, drawn as an astronomical survey.
+      Archive (1): Instagram comments collected with ExportComments from public-facing posts, June 2026.
+      Selection function (2): cuts by platform, group label and group size, made before case reading, with the source post used for E01 masked; 4 posts, 11 groups, 32 comments.
+      Catalogue designations (3): aliasing and source handling. Obscured regions (4): source-post contents and original videos, not inspected.
+      Survey field (5): each group drawn as a system; comment 1 is the primary, and each later comment sits further out in export order.
+      Observing programme (6): the fixed explanatory question. Footprint and field of view (7): available material and contextual window; the analytical focus is the set of bodies on stable orbits.
+      Catalogue tags (8): the occurrence record. Binding criterion (9): the configuration threshold, shown as a bound pair against an optical double.
+      Orbit states (10): the membership state of one proposed relation: stable orbit, supported (S); uncertain capture, unresolved (U); blocked trajectory, reasoned exclusion (X).
+      Light cone (20): earlier wording cannot be uptake of a later reply. Observation-end flags (11): stopping reasons, which can coexist.
+      Instruments (12): the four conditional extensions. Error budget (13): uncertainty attached to six kinds of decision.
+      Observer (14) and data reduction (16): one analyst. Calibration layer (15): derivation of the final form on the same field.
+      Calibration targets (17): development examples. Catalogue (18): Table 2 and Supplementary Table S1. Second observatory (19): proposed assessment, not carried out.
+      Orbits are drawn only where the article names both ends of a relation (N05–N09); N02 and N03 show the Table 2 tally; other systems show the Table 2 consequence.
+    </figcaption>
+  </figure>
+
+  <nav class="index" id="index" aria-label="Parts index"></nav>
+
+  <div class="notes">
+    <section>
+      <h3>Not reported in the article</h3>
+      <ul>
+        <li>The total size of the archive.</li>
+        <li>How many neighbours were supplied per group, by whom, and within what window. Only N06-10 is named, so it is the only neighbour drawn.</li>
+        <li>Which group belongs to which of the four posts.</li>
+        <li>Comment-level membership states for N01, N04 and N07–N11, and which N02 comment is unresolved. The article places these in Supplementary Table S1.</li>
+        <li>Timestamps for comments, apart from the N06 interval of almost two days.</li>
+        <li>The individuation rule that §3.5 says the study states.</li>
+        <li>Any count in the five counting units (tokens, sequences, occurrences, combinations, configurations).</li>
+        <li>The preliminary form's fields beyond "expanded boundary accounts and separate decision fields".</li>
+        <li>A narrower selection for N05. The comparator shows only the candidate and its extension.</li>
+      </ul>
+    </section>
+    <section>
+      <h3>Where the metaphor misrepresents</h3>
+      <ul>
+        <li>Gravity suggests a force pulling comments together. The article's relations are evidential, not causal.</li>
+        <li>Orbital motion, speed and angle are decorative. Only distance from the primary carries information: export order.</li>
+        <li>Orbits around the primary fit relations that run to comment 1. A relation between two later comments (N06-10 to comment 2) has to aim at a moving body and reads less cleanly.</li>
+        <li>A system drawn without orbits has no relation-level states in the article. It is not unbound.</li>
+        <li>The photometer suggests measurement. The article assigns no numerical prominence score.</li>
+        <li>Background stars outside the survey footprint are decorative. Nothing inside the footprint is decorative.</li>
+      </ul>
+    </section>
+    <section>
+      <h3>Review notes for the author</h3>
+      <p class="small">Not part of the caption.</p>
+      <ol>
+        <li>Derivation, reapplication and adjudication use the same archive, analyst and cases, in a fixed reading order with full prior knowledge (§3.6). The plate shows this: calibration and observation draw on the same field.</li>
+        <li>§3.5 reads "The study states its individuation rule". The rule does not appear. Either state it or reword the sentence as a requirement.</li>
+        <li>Five counting units are defined; no count is reported in any of them.</li>
+        <li>Table 2 reports membership states for N02, N03, N05 and N06 only. A full tally needs S1.</li>
+        <li>"Supplied neighbours" are undefined, yet they set the contextual window and produce the unresolved candidates.</li>
+        <li>The origin of grouping fields is not described, though group labels are a selection criterion.</li>
+        <li>Choosing the "nearest plausible" candidate lists four cues (address, lexical uptake, chronology, thematic similarity) without a priority or a criterion for plausibility.</li>
+        <li>The order of the configuration threshold (§3.2) and membership assignment (§3.4) is not explicit. The pipeline follows §3.4.</li>
+        <li>"Candidate" names the middle selection in §2.2 and Table 1, and the extension item in §3.3.</li>
+        <li>Kiesling et al.'s scales and trained-annotation experiment were not reproduced, so the baseline is a qualitative reading.</li>
+        <li>Selection before reading fixes order, not blindness: participants recur, E01's insult formula reappears and prior annotations exist.</li>
+        <li>Extension triggers are counterfactual ("could change the explanation") with no test for "could".</li>
+      </ol>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+const NS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('svg');
+function E(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs){if(attrs[k]!=null)e.setAttribute(k,attrs[k]);}(parent||svg).appendChild(e);return e;}
+function T(p,x,y,s,cls,a){const t=E('text',Object.assign({x,y,class:'t '+(cls||'')},a||{}),p);t.textContent=s;return t;}
+function TL(p,x,y,lines,cls,lh,a){lines.forEach((l,i)=>T(p,x,y+i*(lh||14),l,cls,a));}
+function R(p,x,y,w,h,cls,rx){return E('rect',{x,y,width:w,height:h,rx:rx==null?4:rx,class:cls||'box'},p);}
+function P(p,d,cls,a){return E('path',Object.assign({d,class:cls||'ln'},a||{}),p);}
+function C(p,cx,cy,r,cls,a){return E('circle',Object.assign({cx,cy,r,class:cls},a||{}),p);}
+function num(p,n,x,y){const g=E('g',{},p);C(g,x,y,10,'num-c');T(g,x,y+4,String(n),'',{class:'num-t','text-anchor':'middle'});return g;}
+function part(n,label){return E('g',{class:'part','data-part':n,tabindex:0,role:'button','aria-label':'Part '+n+': '+label});}
+function layer(n){return E('g',{'data-part':n});}
+function lamp(p,x,y,st,r){const lg=E('g',{class:'lamp '+st},p);C(lg,x,y,r||6.5,'');const t=E('text',{x,y:y+3},lg);t.textContent=st==='P'?'?':st;return lg;}
+let seed=20260611;function rnd(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}
+const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- article data ---------- */
+const ROWS=[
+ {id:'N01',n:2,tag:'short core',read:'Reply disputes feasibility; its stance on the goal remains open',cons:'Short core; partial disagreement'},
+ {id:'N02',n:6,tally:['S','S','S','S','S','U'],read:'Assurance and parallel challenges; final anti-insult action clear but addressee unresolved',cons:'Five supported members plus unresolved candidate'},
+ {id:'N03',n:4,tally:['S','S','S','S'],tag:'force open',read:'Two clear challenges and an addressed echo with a possible financial insinuation',cons:'Four supported members; evaluative uncertainty recorded separately'},
+ {id:'N04',n:3,tag:'voice change kept',read:'Distress, empathy/policy defence, then third-party challenge',cons:'Preserve voice change; no complainant acceptance inferred'},
+ {id:'N05',n:3,tally:['S','S','U'],read:'Non-adjacent accountability reframing; intervening insult target unknown',cons:'Two supported members; one unresolved'},
+ {id:'N06',n:2,tally:['S','S','U','X'],tag:'U, X: N06-10',read:'Ironic counterassessment; neighbouring complaint may answer the initial claim',cons:'Two supported members plus unresolved contextual candidate; one later-uptake edge excluded'},
+ {id:'N07',n:2,tag:'partial result',read:'Resignation demand; plausibly hostile abbreviated response with unresolved target/relation',cons:'Partial result; confirmed responsive configuration withheld'},
+ {id:'N08',n:2,tag:'supported; scope open',read:'Heart response displays limited positive affiliative uptake',cons:'Supported membership; endorsement scope remains open'},
+ {id:'N09',n:2,tag:'relation kept; subtype open',read:'Role reversal critically recategorises the same target',cons:'Relation and critical reading retained; subtype open'},
+ {id:'N10',n:3,tag:'short core: A–B–C',read:'Critic attacked, then a third participant attacks the insulter',cons:'Short core establishes A–B–C participation'},
+ {id:'N11',n:3,tag:'local scope',read:'Third-party critical reassessment; initials remain unexpanded',cons:'Local grammatical scope; extended prosody unnecessary'}
+];
+const RK={};ROWS.forEach((r,k)=>RK[r.id]=k);
+const COLX=[462,667,872,1077],ROWY=[372,582,792];
+const ctr=id=>{const k=RK[id];return [COLX[k%4],ROWY[Math.floor(k/4)]];};
+const rx=i=>26+15*(i-2), ry=i=>0.58*rx(i);
+const ANG={2:200,3:330,4:80,5:250,6:30};
+const ept=(cx,cy,i,a)=>[cx+rx(i)*Math.cos(a*Math.PI/180),cy+ry(i)*Math.sin(a*Math.PI/180)];
+const NB=(()=>{const [cx,cy]=ctr('N06');return [cx+80,cy-55];})();
+
+const RELS=[
+ {id:'n05a',row:'N05',from:3,st:'S',kind:'orbit',la:0,rel:'Responsive reformulation',ends:'Comment 3 → comment 1 (non-adjacent)',warrant:'Address to the initial questioner and reformulation of the accountability challenge. The orbit encloses comment 2: the relation skips it.'},
+ {id:'n05b',row:'N05',from:2,st:'U',kind:'arc',la:180,rel:'Response within the exchange',ends:'Comment 2 (elongated insult) → comment 1',warrant:'Plausible member of a responsive account, but no established target and no later uptake. Kept visible as unresolved, not called unrelated.'},
+ {id:'n06a',row:'N06',from:2,st:'S',kind:'orbit',la:180,rel:'Counterassessment',ends:'Comment 2 (ironic reply) → comment 1 (success claim)',warrant:'Apparent acknowledgement, public-service praise, "divina" set against an adverse account of waiting for care, and "gracias por nada" together support an ironic rejection of claimed effectiveness.'},
+ {id:'n06b',row:'N06',from:'nb',st:'U',kind:'capture',rel:'Counterassessment',ends:'N06-10 (neighbouring complaint) → comment 1',warrant:'Matching efficacy concern and compatible timing make the link plausible; no address or distinctive echo establishes it. Inclusion would add a parallel challenge.'},
+ {id:'n06c',row:'N06',from:'nb',st:'X',kind:'blocked',rel:'Uptake',ends:'N06-10 → comment 2 (later ironic reply)',warrant:'The complaint predates the reply by almost two days, which rules out this link.'},
+ {id:'n07a',row:'N07',from:2,st:'U',kind:'arc',la:180,rel:'Response',ends:'Comment 2 (abbreviated initials) → comment 1 (resignation demand)',warrant:'The same writer\'s use of the initials beside an overt insult in N11 supports a hostile hypothesis, but does not fix the expansion, target or attitude to resignation. N11 is lexical context only.'},
+ {id:'n08a',row:'N08',from:2,st:'S',kind:'orbit',la:180,rel:'Affiliative uptake',ends:'Comment 2 (heart response) → comment 1',warrant:'Displays limited positive affiliative uptake; endorsement scope remains open.'},
+ {id:'n09a',row:'N09',from:2,st:'S',kind:'orbit',la:180,rel:'Critical recategorisation',ends:'Comment 2 (role reversal) → comment 1',warrant:'The reply reverses which role noun contains the other, recasting a minister principally as a rentier. Judgement subtype and any allegation of illegality are not established.'}
+];
+const STN={S:'Supported inclusion',U:'Unresolved membership',X:'Reasoned exclusion'};
+
+/* ---------- background stars (decorative, outside the footprint only) ---------- */
+(function(){const g=E('g',{'aria-hidden':'true'});for(let i=0;i<340;i++){const x=rnd()*1600,y=rnd()*1120;if(x>352&&x<1188&&y>232&&y<908)continue;C(g,x.toFixed(1),y.toFixed(1),(rnd()*0.9+0.25).toFixed(2),'bgstar',{opacity:(rnd()*0.45+0.1).toFixed(2)});}})();
+
+/* ---------- 15 calibration layer ---------- */
+let g=part(15,'Calibration layer: derivation');
+R(g,350,30,1040,175,'layer',8);
+T(g,368,24,'Calibration on the same field: how the final form was made','b s');
+T(g,1388,24,'derivation, not validation','i mut',{'text-anchor':'end'});
+R(g,370,46,190,58,'box');T(g,382,66,'Literature comparison','b s');TL(g,382,82,['relational accounts;','annotation work 2024–2026'],'s',14);
+P(g,'M560,62 H588','ln dash',{'marker-end':'url(#ar)'});
+R(g,590,40,240,62,'box');T(g,602,59,'Reference pipeline (existing approach)','b s');TL(g,602,75,['dialogic stance, focus segmentation,','open notes; Hood for prosody'],'s',14);
+R(g,590,122,240,62,'box');T(g,602,141,'Prototype (preliminary form)','b s');TL(g,602,157,['expanded boundary accounts,','separate decision fields'],'s',14);
+P(g,'M345,490 V112 H570','ln');
+P(g,'M570,112 V80 H588','ln',{'marker-end':'url(#ar)'});P(g,'M570,112 V150 H588','ln',{'marker-end':'url(#ar)'});
+C(g,570,112,3,'star');C(g,345,490,3.5,'star');
+T(g,372,128,'same field: 11 groups + neighbours','xs mut');
+R(g,870,72,200,80,'box');T(g,882,92,'Comparison','b s');TL(g,882,108,['repeated address descriptions','→ shorter core','N02, N05 → unresolved state'],'s',14);
+P(g,'M830,70 H850 V100 H868','ln',{'marker-end':'url(#ar)'});P(g,'M830,153 H850 V124 H868','ln',{'marker-end':'url(#ar)'});
+R(g,1110,72,262,80,'box');T(g,1122,92,'Final instrument (Table 1)','b s');TL(g,1122,108,['3 membership states','4 core records','4 conditional extensions'],'s',14);
+P(g,'M1070,112 H1108','ln',{'marker-end':'url(#ar)'});
+P(g,'M1240,152 V222 H1176 V238','ln',{'marker-end':'url(#ar)'});
+T(g,1250,220,'installed; reapplied to the same 11 groups','xs mut');
+num(g,15,350,30);
+
+/* ---------- 1 archive ---------- */
+g=part(1,'Archive');
+R(g,24,40,300,150,'box2',6);
+for(let i=0;i<170;i++)C(g,(30+rnd()*288).toFixed(1),(46+rnd()*138).toFixed(1),(rnd()*0.9+0.3).toFixed(2),'bgstar',{opacity:(rnd()*0.5+0.2).toFixed(2)});
+R(g,38,54,190,74,'box',3);
+T(g,50,74,'Archive','b');T(g,50,91,'Instagram comments, ExportComments','s');T(g,50,106,'public posts · June 2026','s');T(g,50,121,'CIAICO/2023/187','m mut',{style:'font-size:10px'});
+num(g,1,24,40);
+
+/* ---------- 2 selection function ---------- */
+g=part(2,'Selection function');
+E('polygon',{points:'64,192 286,192 200,472 150,472',class:'beamfill'},g);
+[['platform: Instagram',258,96],['group label',322,76],['multi-comment group',386,56]].forEach(([s,y,w])=>{E('ellipse',{cx:175,cy:y,rx:w+16,ry:9,class:'filter'},g);T(g,30,y-14,s,'s');});
+C(g,248,430,11,'mask');P(g,'M240,438 L256,422','ln',{style:'stroke:var(--x)'});T(g,264,428,'E01 post','xs');T(g,264,440,'masked','xs mut');
+P(g,'M175,472 V490 H358','ln',{'marker-end':'url(#ar)',style:'stroke:var(--accent);stroke-width:2'});
+T(g,196,512,'4 posts · 11 groups','s b');T(g,196,527,'32 comments','s b');
+T(g,30,210,'Selection function','b s');
+num(g,2,30,232);
+
+/* ---------- 3 designations ---------- */
+g=part(3,'Catalogue designations: source handling');
+P(g,'M320,490 V556','ln');
+R(g,24,556,300,98,'box');
+T(g,38,576,'Catalogue designations','b s');
+TL(g,38,592,['aliases; no handles, images or links','short excerpts; reread from workbooks','matched to the cleaned corpus'],'s',14);
+T(g,38,642,'earlier chapter annotations: not used as reference','xs mut');
+num(g,3,24,556);
+
+/* ---------- 4 obscured ---------- */
+g=part(4,'Obscured regions: not inspected');
+E('ellipse',{cx:100,cy:712,rx:74,ry:30,class:'dust',filter:'url(#soft)'},g);
+E('ellipse',{cx:250,cy:718,rx:74,ry:30,class:'dust',filter:'url(#soft)'},g);
+T(g,100,716,'source-post contents','s',{'text-anchor':'middle'});T(g,250,722,'original videos','s',{'text-anchor':'middle'});
+T(g,30,768,'obscured: not inspected','s mut');
+num(g,4,24,684);
+
+/* ---------- 5 survey field (background) ---------- */
+g=part(5,'Survey field: comment systems');
+R(g,360,240,820,660,'field',8);
+for(let x=360+102.5;x<1180;x+=102.5)P(g,`M${x},240 V900`,'grid');
+for(let y=240+110;y<900;y+=110)P(g,`M360,${y} H1180`,'grid');
+T(g,378,262,'Survey field','b s');
+num(g,5,360,240);
+
+/* ---------- 7 zones (under systems) ---------- */
+g=part(7,'Footprint and field of view');
+T(g,1164,262,'footprint: available material','xs mut',{'text-anchor':'end'});
+const zones={};
+(function(){let [cx,cy]=ctr('N06');zones.N06=E('g',{},g);C(zones.N06,cx+6,cy-4,112,'fov');T(zones.N06,cx-96,cy-74,'field of view','xs acc');
+ [cx,cy]=ctr('N05');zones.N05=E('g',{},g);C(zones.N05,cx,cy,72,'fov');T(zones.N05,cx-70,cy-58,'field of view','xs acc');})();
+num(g,7,1168,276);
+
+/* ---------- 12 beams (under systems) ---------- */
+const IY=[252,360,468,576];
+const beamL=layer(12);
+const beams=IY.map(()=>E('polygon',{points:'',class:'beam beamfill'},beamL));
+function setBeam(i,rowId){if(!rowId){beams[i].classList.remove('on');return;}const [cx,cy]=ctr(rowId);beams[i].setAttribute('points',`1206,${IY[i]+24} 1206,${IY[i]+76} ${cx+4},${cy+8} ${cx+4},${cy-8}`);beams[i].classList.add('on');}
+
+/* ---------- systems: primaries, bodies, labels (part 5 layer) ---------- */
+const sysL=layer(5);
+const staticBody={};
+ROWS.forEach(r=>{const [cx,cy]=ctr(r.id);const sg=E('g',{'data-row':r.id,'data-sys':r.id},sysL);
+  C(sg,cx,cy,24,'',{fill:'url(#halo)'});
+  C(sg,cx,cy,6,'star',{filter:'url(#glow)'});
+  T(sg,cx-12,cy-8,'1','xs acc',{class:'t xs acc idx'});
+  for(let i=2;i<=r.n;i++){const [x,y]=ept(cx,cy,i,ANG[i]);const known=RELS.some(q=>q.row===r.id&&q.from===i);
+    const b=C(sg,x,y,3.6,known?'bodyc sb':'greyb sb');staticBody[r.id+'-'+i]=b;
+    T(sg,x+6,y-5,String(i),'xs acc',{class:'t xs acc idx'});}
+  if(r.id==='N06'){C(sg,NB[0],NB[1],5,'nb');C(sg,NB[0],NB[1],2.2,'bodyc');T(sg,NB[0]+9,NB[1]+4,'N06-10','m',{style:'font-size:10px'});}
+});
+
+/* ---------- 8 catalogue tags ---------- */
+g=part(8,'Catalogue tags: occurrence record');
+ROWS.forEach(r=>{const [cx,cy]=ctr(r.id);const tg=E('g',{'data-row':r.id,'data-sys':r.id},g);
+  R(tg,cx-34,cy+52,68,18,'pill',9);T(tg,cx-24,cy+65,r.id,'m');T(tg,cx+26,cy+65,'·'+r.n,'xs mut',{'text-anchor':'end'});});
+(function(){const [cx,cy]=ctr('N01');num(g,8,cx-48,cy+61);})();
+
+/* ---------- 10 orbit states + tallies ---------- */
+g=part(10,'Orbit states: membership');
+const relEl={};
+function orbitPath(cx,cy,i){const a=rx(i),b=ry(i);return `M${cx+a},${cy} A${a},${b} 0 1,1 ${cx-a},${cy} A${a},${b} 0 1,1 ${cx+a},${cy}`;}
+function arcPath(cx,cy,i,a1,a2){const p1=ept(cx,cy,i,a1),p2=ept(cx,cy,i,a2);return `M${p1[0].toFixed(1)},${p1[1].toFixed(1)} A${rx(i)},${ry(i)} 0 1,1 ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;}
+function bez(p,t){const u=1-t;return [0,1].map(j=>u*u*u*p[0][j]+3*u*u*t*p[1][j]+3*u*t*t*p[2][j]+t*t*t*p[3][j]);}
+function mover(parent,d,opts){const c=C(parent,0,0,3.6,'bodyc mover');const am=E('animateMotion',Object.assign({dur:opts.dur+'s',repeatCount:'indefinite',path:d},opts.extra||{}),c);if(opts.begin)am.setAttribute('begin',opts.begin);return c;}
+RELS.forEach(q=>{const [cx,cy]=ctr(q.row);const rg=E('g',{class:'rel','data-row':q.row,'data-rel':q.id,'data-st':q.st},g);let d,lp;
+  if(q.kind==='orbit'){d=orbitPath(cx,cy,q.from);P(rg,d,'hit');P(rg,d,'trk');
+    const dur=16+q.from*7;mover(rg,d,{dur,begin:`-${(ANG[q.from]/360*dur).toFixed(2)}s`});lp=ept(cx,cy,q.from,q.la);}
+  else if(q.kind==='arc'){d=arcPath(cx,cy,q.from,120,370);P(rg,d,'hit');P(rg,d,'trk');
+    mover(rg,d,{dur:11,extra:{keyPoints:'0;1;0',keyTimes:'0;0.5;1',calcMode:'linear'}});lp=ept(cx,cy,q.from,q.la);}
+  else if(q.kind==='capture'){d=`M${NB[0]},${NB[1]} Q${cx+28},${cy-74} ${cx+5},${cy-7}`;P(rg,d,'hit');P(rg,d,'trk');
+    mover(rg,d,{dur:7,extra:{keyPoints:'0;0.85;0',keyTimes:'0;0.5;1',calcMode:'linear'}});lp=[cx+38,cy-52];}
+  else if(q.kind==='blocked'){const pts=[[NB[0],NB[1]],[NB[0]+30,NB[1]+42],[cx+52,cy+22],[cx+24,cy+7]];d=`M${pts[0]} C${pts[1]} ${pts[2]} ${pts[3]}`;
+    P(rg,d,'hit');E('path',{d,class:'trk',pathLength:1,'stroke-dasharray':'0.72 2'},rg);
+    const q2=bez(pts,0.74);lp=[q2[0]+12,q2[1]+10];
+    const cg=E('g',{class:'cone'},rg);P(cg,`M${q2[0]-7},${q2[1]-7} L${q2[0]},${q2[1]} L${q2[0]-7},${q2[1]+7}`,'',{style:'fill:none;stroke:var(--x);stroke-width:2'});
+    mover(rg,d,{dur:4.5,extra:{keyPoints:'0;0.7',keyTimes:'0;1',calcMode:'linear'}});}
+  lamp(rg,lp[0],lp[1],q.st);const pl=lamp(rg,lp[0],lp[1],'P');pl.classList.add('plamp');
+  relEl[q.id]={g:rg,data:q};
+});
+const tallyEl={};
+ROWS.forEach(r=>{const [cx,cy]=ctr(r.id);const tg=E('g',{'data-row':r.id,'data-tally':r.id},g);tallyEl[r.id]=tg;
+  let x=cx-82;(r.tally||[]).forEach((s,j)=>{if(r.id==='N06'&&j===2)x+=5;lamp(tg,x,cy+90,s,5.5);x+=14;});
+  if(r.tag)T(tg,r.tally?x+2:cx-86,cy+94,r.tag,'xs mut');});
+(function(){const [cx,cy]=ctr('N02');num(g,10,cx-100,cy+90);})();
+
+/* ---------- 20 light cone (empty cell) ---------- */
+g=part(20,'Light cone: chronology');
+(function(){const cx=1077,cy=800;
+ E('polygon',{points:`${cx},${cy} ${cx-46},${cy+52} ${cx+46},${cy+52}`,style:'fill:rgba(91,227,161,.10)'},g);
+ E('polygon',{points:`${cx},${cy} ${cx-46},${cy-52} ${cx+46},${cy-52}`,style:'fill:rgba(255,109,94,.10)'},g);
+ P(g,`M${cx-46},${cy-52} L${cx+46},${cy+52} M${cx+46},${cy-52} L${cx-46},${cy+52}`,'ln');
+ P(g,`M${cx},${cy+60} V${cy-62}`,'ln dash',{'marker-end':'url(#ar)'});
+ C(g,cx,cy,4,'star',{filter:'url(#glow)'});
+ T(g,cx+6,cy-66,'later','xs mut');
+ T(g,cx,cy-38,'cannot be taken up','xs',{'text-anchor':'middle'});
+ T(g,cx,cy+44,'can be taken up','xs',{'text-anchor':'middle'});
+ T(g,cx-60,cy+4,'a comment','xs acc');
+ T(g,cx-88,cy-78,'Light cone','b s');
+ num(g,20,cx-100,cy-82);})();
+
+/* ---------- 6 observing programme ---------- */
+g=part(6,'Observing programme: fixed question');
+R(g,556,214,408,50,'box',4);
+T(g,570,232,'Observing programme (fixed question)','b xs acc');
+T(g,570,248,'How is an initial evaluation endorsed, challenged, redirected','s');
+T(g,570,261,'or left without a recoverable response?','s');
+num(g,6,556,214);
+
+/* ---------- 12 instruments ---------- */
+g=part(12,'Instruments: extensions');
+R(g,1196,226,196,464,'box2',6);
+T(g,1208,244,'Instruments (pointed by hand)','b s');
+const cmpT={};
+const INST=[['Blink comparator','boundary · used: N02, N05'],['Coronagraph','prosodic scope · used: N06'],['Spectrograph','resource · used: M01, M02'],['Photometer','prominence · used: D1']];
+INST.forEach(([n,u],i)=>{const y=IY[i];R(g,1204,y,180,100,'box',4);T(g,1214,y+17,n,'b s');T(g,1214,y+92,u,'xs mut');});
+['narrower','candidate','wider'].forEach((l,j)=>{const x=1212+j*57;R(g,x,IY[0]+28,52,26,'box2',2);T(g,x+26,IY[0]+68,l,'xs mut',{'text-anchor':'middle'});cmpT[l]=T(g,x+26,IY[0]+46,'','m acc',{'text-anchor':'middle'});});
+(function(){const y=IY[1]+50,x=1250;[26,18].forEach(r=>C(g,x,y,r,'',{style:'fill:none;stroke:var(--star);stroke-opacity:.35;stroke-dasharray:2 3'}));C(g,x,y,10,'',{style:'fill:#000;stroke:var(--line)'});
+  T(g,1288,y-8,'anchor occulted;','xs');T(g,1288,y+5,'halo shows how far','xs');T(g,1288,y+18,'a reading spreads','xs');})();
+(function(){const y=IY[2]+48;E('polygon',{points:`1218,${y+16} 1234,${y-14} 1250,${y+16}`,style:'fill:none;stroke:var(--line);stroke-width:1.2'},g);P(g,`M1200,${y+2} H1228`,'ln');
+  ['mode','position','producer'].forEach((l,j)=>{P(g,`M1244,${y+2} L1290,${y-20+j*20}`,'ln',{style:`stroke:var(--accent);stroke-opacity:${0.9-j*0.2}`});T(g,1296,y-16+j*20,l,'xs');});})();
+(function(){const y=IY[3]+28;['intensity','foreground','centrality','recurrence'].forEach((l,j)=>{const x=1212+(j%2)*86,yy=y+Math.floor(j/2)*26;R(g,x,yy,80,20,'box2',2);T(g,x+40,yy+14,l,'xs',{'text-anchor':'middle'});});})();
+num(g,12,1196,226);
+
+/* ---------- 13 error budget ---------- */
+g=part(13,'Error budget: uncertainty by decision');
+R(g,1196,702,196,198,'box2',6);
+T(g,1208,722,'Error budget','b s');
+['transcription','resource access','attribution','category','relation','boundary'].forEach((l,j)=>{const y=744+j*22;P(g,`M1214,${y-4} H1240 M1214,${y-9} V${y+1} M1240,${y-9} V${y+1}`,'ln');C(g,1227,y-4,2.4,'star');T(g,1252,y,l,'s');});
+T(g,1208,888,'per decision; no single confidence score','xs mut');
+num(g,13,1196,702);
+
+/* ---------- 11 observation ends ---------- */
+g=part(11,'Observation-end flags: stopping reasons');
+R(g,1405,226,185,136,'box2',6);
+T(g,1418,244,'Observation ends','b s');
+['analytically chosen','conversational completion','unavailable material'].forEach((l,j)=>{const y=262+j*28;P(g,`M1420,${y+18} V${y}`,'ln');E('polygon',{points:`1420,${y} 1434,${y+5} 1420,${y+10}`,style:'fill:var(--accent)'},g);T(g,1442,y+12,l,'s');});
+T(g,1418,352,'independent flags: can coexist','xs mut');
+num(g,11,1405,226);
+
+/* ---------- 18 catalogue ---------- */
+g=part(18,'Catalogue: output');
+R(g,1405,376,185,210,'box',4);
+T(g,1418,398,'Catalogue','b');
+T(g,1418,424,'Table 2','b s');T(g,1418,439,'11 entries: reading, consequence','xs');
+T(g,1418,466,'Table S1','b s');T(g,1418,481,'32 sources (comment records)','xs');
+T(g,1418,508,'Account','b s');T(g,1418,523,'one adjudicated reading','xs');
+R(g,1412,600,171,104,'stamp',2);R(g,1416,604,163,96,'stamp',1);
+T(g,1497,622,'NO INDEPENDENT','cap mut',{'text-anchor':'middle'});T(g,1497,636,'CONFIRMATION','cap mut',{'text-anchor':'middle'});
+TL(g,1497,654,['reconstruction','agreement','accuracy','completion time'],'xs mut',12,{'text-anchor':'middle'});
+num(g,18,1405,376);
+
+/* ---------- legend ---------- */
+(function(){const lg=E('g',{});R(lg,1405,718,185,182,'box',4);T(lg,1418,736,'Key','b s');
+ [['S','stable orbit: supported'],['U','uncertain capture: unresolved'],['X','blocked: reasoned exclusion'],['P','proposed, not yet decided']].forEach(([s,l],j)=>{lamp(lg,1424,754+j*20,s,6);T(lg,1436,758+j*20,l,'xs');});
+ C(lg,1424,836,3.6,'bodyc');T(lg,1436,840,'comment in a reported relation','xs');
+ C(lg,1424,856,3.6,'greyb');T(lg,1436,860,'relation not detailed in Table 2','xs');
+ C(lg,1424,876,6,'',{style:'fill:none;stroke:var(--star);stroke-opacity:.6'});C(lg,1424,876,3,'star');T(lg,1436,880,'primary: comment 1','xs');
+ T(lg,1418,895,'motion and angles are decorative','xs mut');})();
+
+/* ---------- 17 calibration targets ---------- */
+g=part(17,'Calibration targets: development material');
+R(g,20,930,320,170,'box2',6);
+T(g,34,950,'Calibration targets','b s');
+[['M01','Post 189'],['M02','Post 61'],['D1','Ex. 3'],['E01','exchange']].forEach(([a,b],j)=>{const x=52+j*62;C(g,x,986,5,'star',{filter:'url(#glow)'});T(g,x,1012,a,'m',{'text-anchor':'middle'});T(g,x,1026,b,'xs mut',{'text-anchor':'middle'});});
+C(g,300,986,5,'',{style:'fill:none;stroke:var(--star);stroke-dasharray:2 2'});T(g,300,1012,'contrasts','m',{'text-anchor':'middle',style:'font-size:10px'});T(g,300,1026,'simulated','xs mut',{'text-anchor':'middle'});
+T(g,34,1078,'standard stars; kept out of the survey field','xs mut');
+P(g,'M20,962 H10 V16 H400 V28','ln dash',{'marker-end':'url(#ar)'});
+T(g,410,14,'development examples','xs mut');
+num(g,17,20,930);
+
+/* ---------- 9 binding criterion ---------- */
+g=part(9,'Binding criterion: threshold');
+R(g,360,930,340,170,'box2',6);
+T(g,374,950,'Binding criterion','b s');
+E('ellipse',{cx:400,cy:982,rx:18,ry:9,style:'fill:none;stroke:var(--s);stroke-width:1.4'},g);C(g,392,982,4,'star');C(g,412,980,3,'bodyc');
+T(g,430,978,'Es cruel y eso me indigna','i');T(g,430,993,'eso relates the two meanings: bound pair','xs mut');
+C(g,392,1036,4,'star');C(g,410,1032,3,'bodyc');P(g,'M392,1036 L410,1032','ln dot');
+T(g,430,1032,'Es cruel. La sala mide veinte metros.','i');T(g,430,1047,'adjacent only: optical double, not bound','xs mut');
+T(g,374,1084,'constructed contrasts (§3.2)','xs mut');
+num(g,9,360,930);
+
+/* ---------- 14 observer ---------- */
+g=part(14,'Observer: one analyst');
+R(g,716,930,164,170,'box',6);
+(function(){const x=798,y=990;P(g,`M${x-30},${y+18} L${x+22},${y-16}`,'',{style:'fill:none;stroke:var(--ink);stroke-width:7;stroke-linecap:round'});P(g,`M${x-4},${y+2} L${x-14},${y+30} M${x-4},${y+2} L${x+6},${y+30}`,'ln');C(g,x+26,y-20,3,'star');})();
+T(g,798,1050,'Observer','b',{'text-anchor':'middle'});T(g,798,1066,'one analyst (author)','s',{'text-anchor':'middle'});
+P(g,'M798,930 V906','ln',{'marker-end':'url(#ar)'});T(g,806,918,'points instruments by hand','xs mut');
+num(g,14,716,930);
+
+/* ---------- 19 second observatory ---------- */
+g=part(19,'Second observatory: proposed');
+R(g,894,930,166,170,'dashedbox',6);
+P(g,'M950,1010 A27,27 0 0 1 1004,1010 Z','',{style:'fill:none;stroke:var(--muted);stroke-dasharray:3 3'});P(g,'M977,983 V1010','ln dash');
+T(g,977,1050,'Second observatory','b',{'text-anchor':'middle'});T(g,977,1066,'proposed (§5.3)','s',{'text-anchor':'middle'});T(g,977,1081,'not carried out','xs mut',{'text-anchor':'middle'});
+num(g,19,894,930);
+
+/* ---------- 16 data reduction ---------- */
+g=part(16,'Data reduction: adjudication');
+R(g,1076,930,316,170,'box',6);
+T(g,1090,950,'Data reduction (adjudication)','b s');
+TL(g,1090,972,['reduced by: one analyst','checked by: the same analyst'],'s',15);
+TL(g,1090,1010,['1  existing-approach reading','2  proposed record'],'s',15);
+TL(g,1090,1048,['compatibility judgements,','not agreement scores'],'xs mut',13);
+P(g,'M1120,900 V928','ln',{'marker-end':'url(#ar)'});T(g,1126,918,'observations','xs mut');
+P(g,'M1392,1015 H1398 V480 H1403','ln',{'marker-end':'url(#ar)'});
+num(g,16,1076,930);
+
+/* ---------- content ---------- */
+const PARTS={
+1:{name:'Archive',stands:'The Instagram archive from which the comparison set was drawn.',items:['Collected with ExportComments from public-facing posts, June 2026','Saved comments and available export metadata inspected','Inventory labels not treated as verified identities','Archive developed within project CIAICO/2023/187 (Generalitat Valenciana)'],src:'§3.1; Funding statement',fit:'strong'},
+2:{name:'Selection function',stands:'Rule-based selection of the comparison set, fixed before any case reading.',items:['Cuts: platform, group labels, group size (multi-comment groups)','The entire source post used for E01 is masked','Exhaustive within the archive','Result: 4 source posts, 11 groups, 32 comments','Spanish and Catalan; one Portuguese reply in N09'],src:'§3.1',fit:'strong',note:'A survey selection function is fixed before the sources are studied, which matches selection before reading.'},
+3:{name:'Catalogue designations',stands:'Source handling and data minimisation.',items:['Comments and supplied neighbours reread from the original workbooks','Selected records match the cleaned corpus','Stable aliases; handles, profile images and direct links omitted','Only short excerpts quoted; other content paraphrased','Prior chapter annotations not used as answers','Source versions, row identifiers and grouping-field origin kept in working records'],src:'§3.1',fit:'strong'},
+4:{name:'Obscured regions',stands:'Material that exists but was not inspected.',items:['Source-post contents','Original videos','An unavailable video can inform a sourced hypothesis but cannot become an inspected component','Export-group membership does not establish native reply-to edges'],src:'§3.1; §3.3',fit:'strong'},
+5:{name:'Survey field',stands:'The 11 comparison groups, each drawn as a system. Comment 1 is the primary; each later comment sits further out, in export order.',items:['N01 2 · N02 6 · N03 4 · N04 3 · N05 3 · N06 2','N07 2 · N08 2 · N09 2 · N10 3 · N11 3 (32 in total)','N06-10 is the only neighbour the article names','Export order is an evidential starting point, not a boundary decision','Position of a system in the field and angle of a body carry no data'],src:'Table 2; §2.2; §3.1; §4.5',fit:'partial',note:'Distance from the primary is the only encoded variable.'},
+6:{name:'Observing programme',stands:'The fixed explanatory question.',items:['Common question for all groups: how an initial evaluation is endorsed, challenged, redirected or left without a recoverable response, and which archived components explain that development','Held fixed while alternative boundaries are considered','A changed question needs a new or revised focus, not silent expansion'],src:'§3.3; §3.6',fit:'strong'},
+7:{name:'Footprint and field of view',stands:'The three scopes of an analysis.',items:['Available material: what was inspected (the survey footprint)','Contextual window: material consulted to assess an interpretation, including contrary evidence (the field-of-view circle)','Analytical focus: the bodies on stable orbits, which can be discontinuous (N05)'],src:'§3.2',fit:'partial',note:'The focus is a set of relations, so it is shown by orbits, not by a region.'},
+8:{name:'Catalogue tags',stands:'The occurrence record kept for each evaluative occurrence.',items:['Anchor: wording, visual region, sequence or relation among resources','Voice; target and evaluated aspect; polarity; category; interpretive grounds','Affect also records experiencer and trigger','Invoked evaluation: observed signal, context, activated norm, proposed reading and a plausible alternative','A represented evaluation is kept apart from the current author\'s endorsement'],src:'§3.2',fit:'partial',note:'A tag sits at one point; the article lets an anchor point to distributed evidence.'},
+9:{name:'Binding criterion',stands:'The configuration threshold.',items:['Combination: at least two warranted meanings whose joint organisation is specified','Configuration: at least one warranted evaluative meaning and an organising relation to another substantive component','Evidence: a scoped connective, quotation and response, or a resource–referent connection','Adjacency alone gives an optical double, not a bound pair','Bare target attribution excluded by convention'],src:'§3.2',fit:'strong',note:'Two stars that only look close are not a physical binary; two adjacent sentences without an organising relation are not a configuration.'},
+10:{name:'Orbit states',stands:'The membership state of one proposed relation under the fixed question.',items:['Stable orbit, supported inclusion: observable connection and contextual warrant; category or force may stay uncertain','Uncertain capture, unresolved membership: a plausible, consequential connection without warrant to prefer it; missing warrant and consequence stated','Blocked trajectory, reasoned exclusion: no evidenced relation required, or evidence contradicts the link','One body can hold different states for different relations (N06-10)','Uncertainty about meaning is recorded separately (N03)'],src:'§3.3; §4.5; Table 2',fit:'partial',note:'Gravity suggests a force; the article\'s relations are evidential. Orbits are drawn only where the article names both ends (N05–N09).'},
+11:{name:'Observation-end flags',stands:'Why an inquiry stops.',items:['Analytically chosen','Supported as conversational completion','Imposed by unavailable material','The conditions can coexist, so the flags are independent'],src:'§3.3',fit:'strong'},
+12:{name:'Instruments',stands:'The four conditional extensions, pointed only when an alternative could change the explanation.',items:['Blink comparator, boundary: narrower, candidate and plausible wider selection. Used for N02, N05','Coronagraph, prosodic scope: masks the anchor to see how far a reading spreads; continuity and interruption. Used for N06','Spectrograph, resource: mode, position, producer and contribution of each resource. Used for M01, M02','Photometer, prominence: dimension compared, scope, warrant, optional ordering with ties. Used for D1'],src:'Table 1; §4.1–4.5; §6',fit:'strong',note:'Pointing an instrument is a choice by the observer, which matches judgement-based activation.'},
+13:{name:'Error budget',stands:'Uncertainty attached to the decision it concerns.',items:['Transcription, resource access, attribution, category, relation, boundary','No single confidence rating for a configuration','The record closes with remaining uncertainty and access limits visible','New evidence or a changed question produces a traceable revision'],src:'§3.4; §3.5',fit:'strong',note:'The bars carry no lengths: the article gives no values.'},
+14:{name:'Observer',stands:'The analyst who applies the record.',items:['One analyst, the author (CRediT: conceptualization, formal analysis, methodology)','No other coder or automated annotation step is described','Every relation is judged and every instrument pointed by hand'],src:'§3.6; CRediT statement',fit:'strong'},
+15:{name:'Calibration layer',stands:'How the final form was derived.',items:['Reference pipeline (existing approach): Du Bois (2007) dialogic stance with Kiesling et al. (2018) focus segmentation, activity descriptions and open rationale notes; Hood for evaluative spread','Kiesling et al.\'s numerical scales and trained-annotation experiment not reproduced','Prototype (preliminary form) preserved before the case comparison','Both received the same groups and neighbours','Revisions: three membership states; streamlined core with conditional extensions','Final form reapplied to the same cases: part of derivation, not a new validation round'],src:'§3.1; §3.6; §4.5',fit:'strong',note:'Calibrating an instrument on the field it then observes is a known source of bias in astronomy. The same applies here.'},
+16:{name:'Data reduction',stands:'Adjudication of the two accounts.',items:['The same analyst as the observer','Each raw group and its neighbours reread','Fixed order: existing-approach reading first, proposed record second','Preliminary accounts prepared in parallel, without controlled order','Both approaches, both earlier accounts and the development examples known throughout','Outcome: compatibility judgements, not independent agreement'],src:'§3.6',fit:'strong'},
+17:{name:'Calibration targets',stands:'Development material, kept out of the survey field.',items:['M01: Post 189, Figure 8 in Sikorskii & Carrió-Pastor (2026b); resource composition','M02: Post 61, Figure 15 in the same article; resource contribution and exclusion','D1: Example 3 in Sikorskii et al. (2026); joint evaluation and functional prominence','E01: archival exchange; boundary illustration','Constructed contrasts: thought experiments, drawn as simulated sources'],src:'§3.1; §4.1–4.4',fit:'strong'},
+18:{name:'Catalogue',stands:'What the procedure outputs.',items:['Table 2: adjudicated reading and final-record consequence for 11 groups','Supplementary Table S1: minimised, aliased records for all 32 comments','One adjudicated analytical account','Not measured: reconstruction by another researcher, agreement, accuracy, completion time'],src:'§3.6; §4.5; Data availability',fit:'strong'},
+19:{name:'Second observatory',stands:'The proposed next assessment. Not carried out.',items:['Two researchers, the same new material, fixed questions','Records preserved before discussion','Reconstruction distinguished from agreement','Matched baseline with open notes, context and qualitative interpretation','Time locating context separated from time completing fields'],src:'§5.3',fit:'strong'},
+20:{name:'Light cone',stands:'The one exclusion rule that works mechanically: chronology.',items:['Earlier wording cannot be uptake of a later reply, although it may answer the same initial contribution','A comment can take up only what lies in its past','Applied in N06: N06-10 predates the ironic reply by almost two days'],src:'§3.3; §4.5',fit:'strong',note:'Every other membership decision is a judgement.'}
+};
+const FIT={strong:'Mapping: strong',partial:'Mapping: partial',weak:'Mapping: weak'};
+const PIPE=[
+ {hl:[1],t:'Archive',x:'Comments collected with ExportComments from public-facing Instagram posts in June 2026.',s:'§3.1'},
+ {hl:[2],t:'Selection function',x:'Groups selected by platform, group label and group size before any case reading. The whole source post used for E01 is masked. Result: 4 posts, 11 groups, 32 comments.',s:'§3.1'},
+ {hl:[3,4],t:'Source handling',x:'Comments and supplied neighbours reread from the original workbooks and matched to the cleaned corpus. Users aliased; short excerpts only. Source-post contents and videos not inspected. Prior chapter annotations not used as answers.',s:'§3.1'},
+ {hl:[17],t:'Development material',x:'M01, M02, D1, E01 and constructed contrasts inform the procedure. They stay outside the comparison set.',s:'§3.1; §4.1–4.4'},
+ {hl:[15],t:'Calibration',x:'The existing approach and a fuller preliminary form were applied to the same groups and neighbours. Comparing the records produced the revisions: three membership states, a short core and conditional extensions.',s:'§3.6; §4.5'},
+ {hl:[5],t:'Final form applied to the field',x:'The final form is reapplied to the same 11 groups to make its decisions inspectable. The article counts this as derivation, not a new validation round.',s:'§3.6'},
+ {hl:[6],t:'Fixed question',x:'One explanatory question is held fixed for every group. A changed question needs a new or revised focus.',s:'§3.3; §3.6'},
+ {hl:[7],t:'Scopes',x:'Available material is what was inspected. The contextual window is what was consulted, including contrary evidence. The focus holds the components joined by supported relations and can be discontinuous.',s:'§3.2'},
+ {hl:[8],t:'Anchors and roles',x:'Each occurrence records anchor, voice, target and aspect, polarity, category and grounds. Invoked evaluation adds signal, context, norm, reading and an alternative.',s:'§3.2'},
+ {hl:[9],t:'Threshold',x:'A configuration needs at least one warranted evaluative meaning and an evidenced organising relation to another substantive component. Adjacency alone gives an optical double, not a bound pair.',s:'§3.2'},
+ {hl:[10,20],t:'Membership',x:'Each proposed relation receives a state: supported, unresolved or reasoned exclusion. The light cone blocks earlier wording from being uptake of a later reply.',s:'§3.3; Table 2'},
+ {hl:[12],t:'Extensions',x:'Boundary, prosodic-scope, resource and prominence records are added only when they could change the explanation.',s:'Table 1'},
+ {hl:[13,11],t:'Closing the record',x:'Uncertainty is attached to the decision it concerns. Stopping reasons are recorded and can coexist.',s:'§3.3; §3.5'},
+ {hl:[14,16],t:'Adjudication',x:'One analyst rereads each raw group and its neighbours: existing-approach reading first, proposed record second. Both approaches and the development examples were known throughout.',s:'§3.6'},
+ {hl:[18],t:'Output',x:'Table 2 (11 entries), Supplementary Table S1 (32 comment records) and one adjudicated account. Reconstruction, agreement, accuracy and completion time were not measured.',s:'§3.6'},
+ {hl:[19],t:'Proposed next step',x:'Two researchers, new material, fixed questions, records preserved before discussion. Not carried out.',s:'§5.3'}
+];
+const CASES={
+ N05:[
+  {hl:[5,7],t:'System N05',x:'Three comments in export order. 1: a challenge about eight years of construction. 2: an elongated insult. 3: a comment addressing the initial questioner and extending accountability to forty years.',rels:{}},
+  {hl:[10],t:'Comment 3 → comment 1',x:'Address and reformulation warrant supported inclusion: a stable orbit. It encloses comment 2, because explanatory relevance is not export proximity.',rels:{n05a:'S'}},
+  {hl:[10],t:'Comment 2 → comment 1, proposed',x:'Proposed relation: the insult as a response within the accountability exchange.',rels:{n05a:'S',n05b:'P'}},
+  {hl:[10],t:'Uncertain capture',x:'The insult is a plausible member of a responsive account but has no established target and no later uptake. It stays visible as unresolved instead of being called unrelated.',rels:{n05a:'S',n05b:'U'}},
+  {hl:[12],t:'Blink comparator',x:'Alternative membership could change the explanation, so the boundary record is activated: the supported selection 1 + 3 against its nearest plausible extension, the intervening comment 2.',rels:{n05a:'S',n05b:'U'},beam:{0:'N05'},cmp:true},
+  {hl:[10,13],t:'Result',x:'Two supported members, one unresolved (Table 2). The repeated insult formula does not supply E01\'s retrospective uptake cue, and the reframing does not show that both questioners blame the same actors.',rels:{n05a:'S',n05b:'U'},beam:{0:'N05'},cmp:true,tally:true}
+ ],
+ N06:[
+  {hl:[5,7],t:'System N06',x:'1: a housing-policy success claim. 2: a reply opening with apparent acknowledgement of work, expanding into public-service praise and closing with "gracias por nada". Neighbour N06-10: a top-level complaint on the same efficacy issue.',rels:{}},
+  {hl:[10],t:'Comment 2 → comment 1',x:'The cues together support an ironic rejection of claimed effectiveness. Counterassessment: a stable orbit.',rels:{n06a:'S'}},
+  {hl:[12],t:'Coronagraph',x:'The ironic reading spreads beyond its anchors, so the scope record is activated. The coded anchors (for example "divina" set against an adverse account of waiting for care), the broader reading and the focal exchange get separate boundaries. The praise sequence is not recoded as separate negative Judgements.',rels:{n06a:'S'},beam:{1:'N06'}},
+  {hl:[10],t:'N06-10 → comment 1',x:'Proposed as a counterassessment of the claim. Matching efficacy concern and compatible timing make it plausible; no address or distinctive echo establishes it. Uncertain capture: unresolved. Inclusion would add a parallel challenge.',rels:{n06a:'S',n06b:'U'},beam:{1:'N06'}},
+  {hl:[20,10],t:'N06-10 → comment 2',x:'Proposed as uptake of the ironic reply. The complaint predates that reply by almost two days, so the trajectory stops at the light cone: reasoned exclusion.',rels:{n06a:'S',n06b:'U',n06c:'X'},beam:{1:'N06'}},
+  {hl:[10],t:'Result',x:'Two supported members, one unresolved contextual candidate, one excluded uptake edge (Table 2). N06-10 is one candidate with two entries, not two additional comments. An affiliation question could select it for another relation.',rels:{n06a:'S',n06b:'U',n06c:'X'},beam:{1:'N06'},tally:true}
+ ]
+};
+
+/* ---------- state + render ---------- */
+const $=id=>document.getElementById(id);
+let mode='explore',step=0,sel=null,timer=null;
+const allParts=[...svg.querySelectorAll('[data-part]')];
+function setRel(id,st){const r=relEl[id];if(!r)return;r.g.setAttribute('data-st',st);const q=r.data;
+  if(typeof q.from==='number'){const b=staticBody[q.row+'-'+q.from];if(b)b.classList.toggle('hide',st==='S'||st==='U');}}
+function allRels(mode){RELS.forEach(q=>setRel(q.id,mode==='final'?q.st:'off'));}
+function setCmp(on){cmpT.narrower.textContent='';cmpT.candidate.textContent=on?'1 + 3':'';cmpT.wider.textContent=on?'+ 2':'';}
+function setZone(id){Object.keys(zones).forEach(z=>zones[z].style.display=(z===id)?'':'none');}
+function classes({hl=[],built=null,focus=null,keep=[]}){
+  allParts.forEach(gp=>{const n=+gp.dataset.part;
+    gp.classList.toggle('hl',hl.includes(n)||sel===n);
+    gp.classList.toggle('pending',!!built&&!built.has(n));
+    gp.classList.toggle('dim',!!focus&&!hl.includes(n)&&!keep.includes(n)&&![5,7,8,10].includes(n));});
+  svg.querySelectorAll('[data-row]').forEach(e=>e.classList.toggle('dim',!!focus&&e.dataset.row!==focus));
+  svg.classList.toggle('show-idx',!!focus);
+}
+function ro({eye,title,text,note,list,src,badge,badgeCls}){
+  $('roEye').textContent=eye||'';$('roTitle').textContent=title||'';$('roText').textContent=text||'';
+  const n=$('roNote');n.hidden=!note;n.textContent=note||'';
+  $('roSrc').textContent=src?('Source: '+src):'';
+  const b=$('roBadge');b.hidden=!badge;b.textContent=badge||'';b.className='badge '+(badgeCls||'');
+  const ul=$('roList');ul.innerHTML='';(list||[]).forEach(s=>{const li=document.createElement('li');li.textContent=s;ul.appendChild(li);});
+}
+function render(){
+  const btns={explore:'mExplore',pipe:'mPipe',N05:'mN05',N06:'mN06'};
+  Object.entries(btns).forEach(([m,id])=>$(id).setAttribute('aria-pressed',String(m===mode)));
+  const steps=mode==='pipe'?PIPE:CASES[mode];
+  $('bPrev').disabled=!steps||step===0;$('bNext').disabled=!steps||step===steps.length-1;$('bPlay').disabled=!steps;
+  $('stepNo').textContent=steps?`${step+1} / ${steps.length}`:'';
+  [0,1,2,3].forEach(i=>setBeam(i,null));setCmp(false);
+  Object.values(tallyEl).forEach(t=>t.style.opacity='');
+  if(mode==='explore'){
+    allRels('final');setZone('N06');classes({});
+    if(sel==null)ro({eye:'Overview',title:'How to read the chart',text:'Each comment group is a system. Comment 1 is the primary star; later comments sit further out, in export order. A proposed relation is drawn as an orbit or trajectory, and its state is its badge. Select a numbered part for what it stands for, the article\'s values and where they come from.',list:['S stable orbit: supported inclusion','U uncertain capture: unresolved membership','X blocked trajectory: reasoned exclusion','A badge belongs to a relation, not to a comment','Motion and angles are decorative; distance from the primary is export order']});
+    updateIndex();return;
+  }
+  const s=steps[step];
+  if(mode==='pipe'){
+    const built=new Set();PIPE.slice(0,step+1).forEach(p=>p.hl.forEach(n=>built.add(n)));
+    allRels(built.has(10)?'final':'off');setZone(built.has(7)?'N06':null);
+    classes({hl:s.hl,built});
+    ro({eye:`Pipeline · step ${step+1} of ${PIPE.length}`,title:s.t,text:s.x,src:s.s,list:s.hl.map(n=>`Part ${n}: ${PARTS[n].name}`)});
+  }else{
+    allRels('off');Object.entries(s.rels).forEach(([id,st])=>setRel(id,st));
+    setZone(mode);
+    if(s.beam)Object.entries(s.beam).forEach(([i,r])=>setBeam(+i,r));
+    setCmp(!!s.cmp);
+    tallyEl[mode].style.opacity=s.tally?'1':'0';
+    classes({hl:s.hl,focus:mode,keep:s.beam?[12]:[]});
+    const row=ROWS[RK[mode]];
+    ro({eye:`System ${mode} · step ${step+1} of ${steps.length}`,title:s.t,text:s.x,src:'§4.5; Table 2',list:s.tally?[`Table 2 reading: ${row.read}`,`Consequence: ${row.cons}`]:s.hl.map(n=>`Part ${n}: ${PARTS[n].name}`)});
+  }
+  updateIndex();
+}
+function showPart(n){mode='explore';stop();sel=n;render();const p=PARTS[n];
+  ro({eye:`Part ${n}`,title:p.name,text:p.stands,note:p.note,list:p.items,src:p.src,badge:FIT[p.fit],badgeCls:p.fit});}
+function showRel(id){const q=relEl[id].data;mode='explore';stop();sel=10;render();
+  ro({eye:`${q.row} · membership entry`,title:q.rel,text:q.warrant,list:[`Ends: ${q.ends}`,`State: ${STN[q.st]}`,'Question: the fixed observing programme (part 6)'],src:'§4.5; Table 2',badge:STN[q.st],badgeCls:q.st});}
+function showRow(id){const r=ROWS[RK[id]];mode='explore';stop();sel=null;render();
+  ro({eye:`System ${id} · ${r.n} comments`,title:'Table 2 entry',text:r.read+'.',list:[`Final-record consequence: ${r.cons}`,id==='N09'?'Includes a Portuguese reply':null,id==='N07'?'N11 is used as lexical context only; it is not inserted into the exchange':null,id==='N03'?'The final reply belongs through address and echo; its evaluative force is recorded separately':null].filter(Boolean),src:'Table 2; §4.5',note:(CASES[id]?'Step through this system with the System '+id+' button.':null)});}
+function updateIndex(){document.querySelectorAll('.idx-btn').forEach(b=>b.setAttribute('aria-current',String(mode==='explore'&&+b.dataset.n===sel)));}
+function stop(){if(timer){clearInterval(timer);timer=null;$('bPlay').textContent='Play';}}
+function setMode(m){stop();mode=m;step=0;sel=null;render();}
+
+svg.addEventListener('click',e=>{
+  const c=e.target.closest('[data-rel]');if(c&&!c.closest('.dim')&&c.dataset.st!=='off'){showRel(c.dataset.rel);return;}
+  const r=e.target.closest('[data-sys]');if(r){showRow(r.dataset.sys);return;}
+  const t=e.target.closest('[data-tally]');if(t){showRow(t.dataset.tally);return;}
+  const p=e.target.closest('.part');if(p)showPart(+p.dataset.part);
+});
+svg.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const p=e.target.closest('.part');if(p){e.preventDefault();showPart(+p.dataset.part);}});
+$('mExplore').onclick=()=>setMode('explore');$('mPipe').onclick=()=>setMode('pipe');
+$('mN05').onclick=()=>setMode('N05');$('mN06').onclick=()=>setMode('N06');
+$('bPrev').onclick=()=>{stop();if(step>0){step--;render();}};
+$('bNext').onclick=()=>{stop();const s=mode==='pipe'?PIPE:CASES[mode];if(s&&step<s.length-1){step++;render();}};
+$('bPlay').onclick=()=>{if(timer){stop();return;}const s=mode==='pipe'?PIPE:CASES[mode];if(!s)return;if(step>=s.length-1)step=0;render();$('bPlay').textContent='Pause';
+  timer=setInterval(()=>{if(step<s.length-1){step++;render();}else stop();},4200);};
+const idx=$('index');Object.keys(PARTS).map(Number).sort((a,b)=>a-b).forEach(n=>{const b=document.createElement('button');b.className='idx-btn';b.dataset.n=n;b.innerHTML='<b></b><span></span>';b.querySelector('b').textContent=n;b.querySelector('span').textContent=`${PARTS[n].name}: ${PARTS[n].stands.split('. ')[0].replace(/\.$/,'')}`;b.onclick=()=>{showPart(n);document.querySelector('.console').scrollIntoView({block:'nearest'});};idx.appendChild(b);});
+if(reduce&&svg.pauseAnimations)svg.pauseAnimations();
+render();
+})();
+</script>
